@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScalpRadar — Analyse Crypto Futures</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0c0f;
+  --surface:#111318;
+  --surface2:#181c23;
+  --border:#1f2430;
+  --border2:#2a3040;
+  --text:#e8eaf0;
+  --muted:#5a6175;
+  --muted2:#3a4155;
+  --green:#00e676;
+  --green-dim:#00e67622;
+  --green-mid:#00e67644;
+  --red:#ff4444;
+  --red-dim:#ff444422;
+  --red-mid:#ff444444;
+  --amber:#ffb300;
+  --amber-dim:#ffb30022;
+  --blue:#4fc3f7;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;}
+body{min-height:100vh;display:flex;flex-direction:column;}
+
+/* HEADER */
+header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:10;}
+.logo{font-size:1.1rem;font-weight:800;letter-spacing:.04em;}
+.logo span{color:var(--green);}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.live-badge{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);display:flex;align-items:center;gap:4px;}
+#clock{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);}
+
+/* CONTROLS */
+.controls{padding:1.25rem 1.5rem;display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-bottom:1px solid var(--border);}
+select{background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-family:'IBM Plex Mono',monospace;font-size:13px;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
+select:hover{border-color:var(--muted);}
+.btn{background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:8px 20px;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.03em;}
+.btn:hover{border-color:var(--green);color:var(--green);}
+.btn:active{transform:scale(.97);}
+.cd-wrap{margin-left:auto;display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);}
+.cd-bar{width:80px;height:3px;background:var(--border2);border-radius:2px;overflow:hidden;}
+.cd-fill{height:100%;background:var(--green);border-radius:2px;transition:width 1s linear;}
+
+/* MAIN GRID */
+main{flex:1;padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:12px;}
+
+/* SIGNAL CARD */
+.signal-card{border-radius:12px;padding:2rem 1.5rem;text-align:center;border:1px solid var(--border);background:var(--surface);transition:all .5s;position:relative;overflow:hidden;}
+.signal-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .5s;}
+.signal-card.long{border-color:var(--green);background:var(--green-dim);}
+.signal-card.long::before{background:radial-gradient(ellipse at 50% 0%,var(--green-mid),transparent 70%);opacity:1;}
+.signal-card.short{border-color:var(--red);background:var(--red-dim);}
+.signal-card.short::before{background:radial-gradient(ellipse at 50% 0%,var(--red-mid),transparent 70%);opacity:1;}
+.signal-card.wait{border-color:var(--border2);}
+.signal-label-top{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.15em;color:var(--muted);margin-bottom:1rem;position:relative;}
+.signal-arrow{font-size:56px;line-height:1;margin-bottom:.5rem;position:relative;transition:color .5s;}
+.signal-word{font-size:32px;font-weight:800;letter-spacing:.04em;position:relative;transition:color .5s;}
+.signal-sub{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:.75rem;position:relative;}
+.long .signal-arrow,.long .signal-word{color:var(--green);}
+.short .signal-arrow,.short .signal-word{color:var(--red);}
+.wait .signal-arrow,.wait .signal-word{color:var(--muted);}
+
+/* PRICE BAR */
+.price-bar{display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;}
+.price-main{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;}
+.price-chg{font-family:'IBM Plex Mono',monospace;font-size:13px;}
+.price-chg.up{color:var(--green);}
+.price-chg.dn{color:var(--red);}
+.price-pair{font-size:11px;color:var(--muted);letter-spacing:.08em;margin-bottom:4px;}
+
+/* LEVELS GRID */
+.levels-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.level-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;}
+.level-lbl{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);margin-bottom:6px;}
+.level-val{font-size:17px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+.level-val.green{color:var(--green);}
+.level-val.red{color:var(--red);}
+.level-val.amber{color:var(--amber);}
+.level-sub{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:3px;}
+
+/* LEVERAGE CARD */
+.lev-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;grid-column:1/-1;}
+.lev-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.lev-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);}
+.lev-warn{font-size:10px;color:var(--amber);background:var(--amber-dim);border-radius:4px;padding:2px 8px;font-family:'IBM Plex Mono',monospace;}
+.lev-options{display:flex;gap:8px;flex-wrap:wrap;}
+.lev-opt{border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;flex:1;text-align:center;min-width:80px;}
+.lev-opt .lev-x{font-size:18px;font-weight:600;margin-bottom:2px;}
+.lev-opt .lev-desc{font-size:10px;color:var(--muted);}
+.lev-opt.safe{border-color:var(--green);background:var(--green-dim);}
+.lev-opt.safe .lev-x{color:var(--green);}
+.lev-opt.mod{border-color:var(--amber);background:var(--amber-dim);}
+.lev-opt.mod .lev-x{color:var(--amber);}
+.lev-opt.risk{border-color:var(--red);background:var(--red-dim);}
+.lev-opt.risk .lev-x{color:var(--red);}
+
+/* CONFIDENCE */
+.conf-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;}
+.conf-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+.conf-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);}
+.conf-pct{font-size:15px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+.conf-bar{height:6px;background:var(--border2);border-radius:3px;overflow:hidden;}
+.conf-fill{height:100%;border-radius:3px;transition:width .6s,background .6s;}
+.ind-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;font-family:'IBM Plex Mono',monospace;}
+.ind-row:last-child{border-bottom:none;}
+.ind-name{color:var(--muted);}
+.ind-val{font-weight:500;}
+.ind-sig{font-size:10px;padding:2px 8px;border-radius:4px;margin-left:6px;}
+.bull{color:var(--green);}
+.bear{color:var(--red);}
+.neu{color:var(--muted);}
+.sig-bull{background:var(--green-dim);color:var(--green);}
+.sig-bear{background:var(--red-dim);color:var(--red);}
+.sig-neu{background:var(--border);color:var(--muted);}
+
+/* LOG */
+.log-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;}
+.log-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);margin-bottom:10px;}
+.log-list{display:flex;flex-direction:column;gap:5px;max-height:120px;overflow-y:auto;}
+.log-item{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);}
+.log-item.long-entry{color:var(--green);}
+.log-item.short-entry{color:var(--red);}
+
+/* DISCLAIMER */
+footer{padding:1rem 1.5rem;border-top:1px solid var(--border);font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted2);text-align:center;line-height:1.7;}
+
+/* LOADING STATE */
+.loading-text{font-size:13px;font-family:'IBM Plex Mono',monospace;color:var(--muted);animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+@media(max-width:480px){
+  header{padding:.75rem 1rem;}
+  .controls{padding:.75rem 1rem;gap:8px;}
+  main{padding:1rem;}
+  .signal-word{font-size:26px;}
+  .signal-arrow{font-size:44px;}
+  .levels-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Scalp<span>Radar</span></div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <span class="live-badge"><span class="live-dot"></span>LIVE</span>
+    <span id="clock">--:--:--</span>
+  </div>
+</header>
+
+<div class="controls">
+  <select id="pair">
+    <option value="BTCUSDT">BTC / USDT</option>
+    <option value="ETHUSDT">ETH / USDT</option>
+    <option value="SOLUSDT">SOL / USDT</option>
+    <option value="BNBUSDT">BNB / USDT</option>
+    <option value="XRPUSDT">XRP / USDT</option>
+    <option value="DOGEUSDT">DOGE / USDT</option>
+    <option value="ADAUSDT">ADA / USDT</option>
+    <option value="AVAXUSDT">AVAX / USDT</option>
+    <option value="LINKUSDT">LINK / USDT</option>
+    <option value="DOTUSDT">DOT / USDT</option>
+  </select>
+  <select id="tf">
+    <option value="1m">1 min</option>
+    <option value="3m">3 min</option>
+    <option value="5m" selected>5 min</option>
+    <option value="15m">15 min</option>
+    <option value="30m">30 min</option>
+  </select>
+  <select id="risk">
+    <option value="1">Risque 1% / trade</option>
+    <option value="2" selected>Risque 2% / trade</option>
+    <option value="3">Risque 3% / trade</option>
+    <option value="5">Risque 5% / trade</option>
+  </select>
+  <button class="btn" onclick="triggerAnalyze()">↻ Analyser</button>
+  <div class="cd-wrap">
+    <span>actu. <span id="cdNum">—</span>s</span>
+    <div class="cd-bar"><div class="cd-fill" id="cdFill" style="width:100%"></div></div>
+  </div>
+</div>
+
+<main>
+
+  <!-- SIGNAL -->
+  <div class="signal-card wait" id="sigCard">
+    <div class="signal-label-top">SIGNAL SCALP FUTURES</div>
+    <div class="signal-arrow" id="sigArrow">·</div>
+    <div class="signal-word" id="sigWord"><span class="loading-text">Analyse en cours...</span></div>
+    <div class="signal-sub" id="sigSub">Connexion à Binance...</div>
+  </div>
+
+  <!-- PRIX -->
+  <div class="price-bar">
+    <div>
+      <div class="price-pair" id="pricePair">— / USDT</div>
+      <div class="price-main" id="priceVal">—</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="price-chg" id="priceChg">—</div>
+      <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:4px;" id="priceVol">Vol: —</div>
+    </div>
+  </div>
+
+  <!-- NIVEAUX TP / SL -->
+  <div class="levels-grid" id="levelsWrap" style="display:none;">
+    <div class="level-card">
+      <div class="level-lbl">TAKE PROFIT</div>
+      <div class="level-val green" id="lvTP">—</div>
+      <div class="level-sub" id="lvTPpct">—</div>
+    </div>
+    <div class="level-card">
+      <div class="level-lbl">STOP LOSS</div>
+      <div class="level-val red" id="lvSL">—</div>
+      <div class="level-sub" id="lvSLpct">—</div>
+    </div>
+    <div class="level-card">
+      <div class="level-lbl">RATIO R/R</div>
+      <div class="level-val amber" id="lvRR">—</div>
+      <div class="level-sub">risque / récompense</div>
+    </div>
+    <div class="level-card">
+      <div class="level-lbl">ATR (VOLATILITÉ)</div>
+      <div class="level-val" id="lvATR" style="color:var(--blue);">—</div>
+      <div class="level-sub">mouvement moyen</div>
+    </div>
+
+    <!-- LEVIER -->
+    <div class="lev-card">
+      <div class="lev-header">
+        <div class="lev-title">LEVIER SUGGÉRÉ (FUTURES)</div>
+        <div class="lev-warn">⚠ Gestion du risque</div>
+      </div>
+      <div class="lev-options">
+        <div class="lev-opt safe">
+          <div class="lev-x" id="levSafe">×—</div>
+          <div class="lev-desc">Prudent</div>
+        </div>
+        <div class="lev-opt mod">
+          <div class="lev-x" id="levMod">×—</div>
+          <div class="lev-desc">Modéré</div>
+        </div>
+        <div class="lev-opt risk">
+          <div class="lev-x" id="levRisk">×—</div>
+          <div class="lev-desc">Agressif</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);line-height:1.6;" id="levExplain">—</div>
+    </div>
+  </div>
+
+  <!-- CONFIANCE + INDICATEURS -->
+  <div class="conf-card">
+    <div class="conf-header">
+      <div class="conf-title">CONFIANCE DU SIGNAL</div>
+      <div class="conf-pct" id="confPct">—</div>
+    </div>
+    <div class="conf-bar" style="margin-bottom:14px;">
+      <div class="conf-fill" id="confFill" style="width:0%;background:var(--muted);"></div>
+    </div>
+    <div id="indRows">
+      <div class="ind-row"><span class="ind-name">En attente...</span></div>
+    </div>
+  </div>
+
+  <!-- HISTORIQUE -->
+  <div class="log-card">
+    <div class="log-title">HISTORIQUE DES SIGNAUX</div>
+    <div class="log-list" id="logList">
+      <div class="log-item">— Aucun signal enregistré</div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  ScalpRadar utilise l'API publique Binance · Données en temps réel · Aucune donnée personnelle collectée<br>
+  ⚠ Cet outil est un assistant d'analyse. Il ne garantit aucun résultat. Le trading de futures avec levier comporte un risque de perte totale du capital.
+</footer>
+
+<script>
+// ─── ÉTAT ───
+let cdVal = 30, timer = null, logs = [];
+const CD_MAX = 30;
+
+// ─── HORLOGE ───
+setInterval(() => {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('fr-FR');
+}, 1000);
+
+// ─── FORMAT PRIX ───
+function fmt(n) {
+  if (n >= 1000) return '$' + n.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  if (n >= 1)    return '$' + n.toFixed(4);
+  return '$' + n.toFixed(6);
+}
+function fmtPct(n) { return (n >= 0 ? '+' : '') + n.toFixed(2) + '%'; }
+
+// ─── INDICATEURS ───
+function calcEMA(data, period) {
+  const k = 2 / (period + 1);
+  let ema = data[0];
+  const result = [ema];
+  for (let i = 1; i < data.length; i++) { ema = data[i] * k + ema * (1 - k); result.push(ema); }
+  return result;
+}
+
+function calcRSI(closes, period) {
+  const changes = [];
+  for (let i = 1; i < closes.length; i++) changes.push(closes[i] - closes[i-1]);
+  let ag = 0, al = 0;
+  for (let i = 0; i < period; i++) { if (changes[i] > 0) ag += changes[i]; else al -= changes[i]; }
+  ag /= period; al /= period;
+  for (let i = period; i < changes.length; i++) {
+    ag = (ag * (period - 1) + (changes[i] > 0 ? changes[i] : 0)) / period;
+    al = (al * (period - 1) + (changes[i] < 0 ? -changes[i] : 0)) / period;
+  }
+  return al === 0 ? 100 : 100 - (100 / (1 + ag / al));
+}
+
+function calcBB(closes, period, mult) {
+  const slice = closes.slice(-period);
+  const sma = slice.reduce((a, b) => a + b) / period;
+  const std = Math.sqrt(slice.reduce((a, v) => a + Math.pow(v - sma, 2), 0) / period);
+  const upper = sma + mult * std;
+  const lower = sma - mult * std;
+  const last = closes[closes.length - 1];
+  return { upper, lower, sma, pctB: (last - lower) / (upper - lower) };
+}
+
+function calcMACD(closes) {
+  const ema12 = calcEMA(closes, 12);
+  const ema26 = calcEMA(closes, 26);
+  const macdLine = ema12.map((v, i) => v - ema26[i]).slice(26);
+  const signalLine = calcEMA(macdLine, 9);
+  const hist = macdLine[macdLine.length - 1] - signalLine[signalLine.length - 1];
+  const prevHist = macdLine[macdLine.length - 2] - signalLine[signalLine.length - 2];
+  return { hist, prevHist, macd: macdLine[macdLine.length - 1], signal: signalLine[signalLine.length - 1] };
+}
+
+function calcATR(highs, lows, closes, period) {
+  const trs = [];
+  for (let i = 1; i < closes.length; i++) {
+    trs.push(Math.max(
+      highs[i] - lows[i],
+      Math.abs(highs[i] - closes[i - 1]),
+      Math.abs(lows[i] - closes[i - 1])
+    ));
+  }
+  return trs.slice(-period).reduce((a, b) => a + b) / period;
+}
+
+function calcVolume(vols) {
+  const last = vols[vols.length - 1];
+  const avg = vols.slice(-21, -1).reduce((a, b) => a + b) / 20;
+  return { ratio: last / avg, avg };
+}
+
+// ─── LEVIER SUGGÉRÉ ───
+function suggestLeverage(atr, price, riskPct) {
+  const atrPct = (atr / price) * 100;
+  // Le levier max "safe" = riskPct% de capital / atrPct de SL (1.5 ATR)
+  const slPct = atrPct * 1.5;
+  const maxLev = riskPct / slPct;
+  const safe  = Math.max(1, Math.min(3,  Math.floor(maxLev * 0.5)));
+  const mod   = Math.max(1, Math.min(10, Math.floor(maxLev * 0.8)));
+  const risky = Math.max(1, Math.min(20, Math.floor(maxLev * 1.2)));
+  return { safe, mod, risky, slPct: slPct.toFixed(2) };
+}
+
+// ─── ANALYSE PRINCIPALE ───
+async function analyze() {
+  const pair = document.getElementById('pair').value;
+  const tf   = document.getElementById('tf').value;
+  const riskPct = parseFloat(document.getElementById('risk').value);
+  const sigCard = document.getElementById('sigCard');
+
+  try {
+    const binanceUrl = `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${tf}&limit=120`;
+    let data;
+    try {
+      const res = await fetch(binanceUrl);
+      if (!res.ok) throw new Error('status ' + res.status);
+      data = await res.json();
+    } catch(e1) {
+      // Fallback proxy (si ouvert en fichier local ou CORS bloqué)
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(binanceUrl)}`;
+      const res2 = await fetch(proxyUrl);
+      if (!res2.ok) throw new Error('Proxy indisponible — mets le fichier sur GitHub Pages');
+      data = await res2.json();
+    }
+    if (!Array.isArray(data) || data.length < 50) throw new Error('Données insuffisantes');
+
+    const closes = data.map(c => parseFloat(c[4]));
+    const highs  = data.map(c => parseFloat(c[2]));
+    const lows   = data.map(c => parseFloat(c[3]));
+    const vols   = data.map(c => parseFloat(c[5]));
+    const price  = closes[closes.length - 1];
+    const prev   = closes[closes.length - 2];
+    const chgPct = ((price - prev) / prev) * 100;
+
+    // ── Indicateurs ──
+    const rsi  = calcRSI(closes, 14);
+    const bb   = calcBB(closes, 20, 2);
+    const macd = calcMACD(closes);
+    const atr  = calcATR(highs, lows, closes, 14);
+    const vol  = calcVolume(vols);
+    const ema9  = calcEMA(closes, 9);
+    const ema21 = calcEMA(closes, 21);
+    const ce9  = ema9[ema9.length - 1], pe9  = ema9[ema9.length - 2];
+    const ce21 = ema21[ema21.length - 1], pe21 = ema21[ema21.length - 2];
+
+    // ── Score (+vote bullish / -vote bearish) ──
+    let score = 0;
+    const indData = [];
+
+    // RSI
+    let rsiSig, rsiStr, rsiScore;
+    if      (rsi < 30)  { rsiScore =  2; rsiSig = 'bull'; rsiStr = 'Survendu — LONG'; }
+    else if (rsi < 42)  { rsiScore =  1; rsiSig = 'bull'; rsiStr = 'Zone achat'; }
+    else if (rsi > 70)  { rsiScore = -2; rsiSig = 'bear'; rsiStr = 'Suracheté — SHORT'; }
+    else if (rsi > 58)  { rsiScore = -1; rsiSig = 'bear'; rsiStr = 'Zone vente'; }
+    else                { rsiScore =  0; rsiSig = 'neu';  rsiStr = 'Neutre'; }
+    score += rsiScore;
+    indData.push({ name: 'RSI (14)', val: rsi.toFixed(1), sig: rsiSig, str: rsiStr });
+
+    // EMA 9/21
+    let emaSig, emaStr, emaScore;
+    if      (pe9 < pe21 && ce9 > ce21) { emaScore =  2; emaSig = 'bull'; emaStr = 'Golden cross ↑'; }
+    else if (pe9 > pe21 && ce9 < ce21) { emaScore = -2; emaSig = 'bear'; emaStr = 'Death cross ↓'; }
+    else if (ce9 > ce21)               { emaScore =  1; emaSig = 'bull'; emaStr = 'Tendance haussière'; }
+    else                               { emaScore = -1; emaSig = 'bear'; emaStr = 'Tendance baissière'; }
+    score += emaScore;
+    indData.push({ name: 'EMA 9/21', val: (((ce9 - ce21) / ce21) * 100).toFixed(3) + '%', sig: emaSig, str: emaStr });
+
+    // MACD
+    let macdSig, macdStr, macdScore;
+    if      (macd.hist > 0 && macd.hist > macd.prevHist) { macdScore =  2; macdSig = 'bull'; macdStr = 'Momentum↑ accélère'; }
+    else if (macd.hist > 0)                               { macdScore =  1; macdSig = 'bull'; macdStr = 'Momentum haussier'; }
+    else if (macd.hist < 0 && macd.hist < macd.prevHist) { macdScore = -2; macdSig = 'bear'; macdStr = 'Momentum↓ accélère'; }
+    else                                                  { macdScore = -1; macdSig = 'bear'; macdStr = 'Momentum baissier'; }
+    score += macdScore;
+    indData.push({ name: 'MACD', val: macd.hist.toFixed(4), sig: macdSig, str: macdStr });
+
+    // Bollinger
+    let bbSig, bbStr, bbScore;
+    if      (bb.pctB < 0.1)  { bbScore =  2; bbSig = 'bull'; bbStr = 'Bande inf. — rebond possible'; }
+    else if (bb.pctB < 0.3)  { bbScore =  1; bbSig = 'bull'; bbStr = 'Zone basse'; }
+    else if (bb.pctB > 0.9)  { bbScore = -2; bbSig = 'bear'; bbStr = 'Bande sup. — retournement ?'; }
+    else if (bb.pctB > 0.7)  { bbScore = -1; bbSig = 'bear'; bbStr = 'Zone haute'; }
+    else                     { bbScore =  0; bbSig = 'neu';  bbStr = 'Centre (' + (bb.pctB * 100).toFixed(0) + '%)'; }
+    score += bbScore;
+    indData.push({ name: 'Bollinger %B', val: (bb.pctB * 100).toFixed(1) + '%', sig: bbSig, str: bbStr });
+
+    // Volume
+    let volSig, volStr, volScore;
+    const up = price > prev;
+    if (vol.ratio > 1.8)      { volScore = up ? 1 : -1; volSig = up ? 'bull' : 'bear'; volStr = 'Vol. très fort × ' + vol.ratio.toFixed(1); }
+    else if (vol.ratio > 1.3) { volScore = up ? 1 : -1; volSig = up ? 'bull' : 'bear'; volStr = 'Vol. élevé × ' + vol.ratio.toFixed(1); }
+    else if (vol.ratio < 0.6) { volScore = 0; volSig = 'neu'; volStr = 'Vol. faible — signal douteux'; }
+    else                      { volScore = 0; volSig = 'neu'; volStr = 'Vol. normal × ' + vol.ratio.toFixed(1); }
+    score += volScore;
+    indData.push({ name: 'Volume / Moy.', val: '×' + vol.ratio.toFixed(2), sig: volSig, str: volStr });
+
+    // ── Décision finale ──
+    const maxScore = 9;
+    const conf = Math.round((Math.abs(score) / maxScore) * 100);
+    const isLong  = score >= 3;
+    const isShort = score <= -3;
+    const isWait  = !isLong && !isShort;
+
+    // ── Niveaux ──
+    let tp = null, sl = null;
+    if (isLong)  { sl = price - atr * 1.5; tp = price + atr * 2.5; }
+    if (isShort) { sl = price + atr * 1.5; tp = price - atr * 2.5; }
+
+    // ── Levier ──
+    const lev = suggestLeverage(atr, price, riskPct);
+
+    // ─── RENDU ───
+
+    // Prix
+    document.getElementById('pricePair').textContent = pair.replace('USDT', '') + ' / USDT · ' + tf;
+    document.getElementById('priceVal').textContent  = fmt(price);
+    const chgEl = document.getElementById('priceChg');
+    chgEl.textContent = fmtPct(chgPct);
+    chgEl.className   = 'price-chg ' + (chgPct >= 0 ? 'up' : 'dn');
+    document.getElementById('priceVol').textContent = 'Vol: ×' + vol.ratio.toFixed(2) + ' moy.';
+
+    // Signal
+    sigCard.className = 'signal-card ' + (isLong ? 'long' : isShort ? 'short' : 'wait');
+    document.getElementById('sigArrow').textContent = isLong ? '↑' : isShort ? '↓' : '→';
+    document.getElementById('sigWord').textContent  = isLong ? 'LONG' : isShort ? 'SHORT' : 'ATTENDS';
+    const confLabel = conf >= 70 ? 'Confiance élevée' : conf >= 45 ? 'Confiance moyenne' : 'Signal faible';
+    document.getElementById('sigSub').textContent   = isWait
+      ? 'Pas de signal clair — patienter'
+      : confLabel + ' · Score ' + (score > 0 ? '+' : '') + score + ' / ' + maxScore;
+
+    // Niveaux
+    const levWrap = document.getElementById('levelsWrap');
+    if (!isWait && tp && sl) {
+      levWrap.style.display = 'grid';
+      const tpPct = ((tp - price) / price) * 100;
+      const slPct2 = ((sl - price) / price) * 100;
+      const rr = Math.abs(tp - price) / Math.abs(sl - price);
+      document.getElementById('lvTP').textContent  = fmt(tp);
+      document.getElementById('lvSL').textContent  = fmt(sl);
+      document.getElementById('lvTPpct').textContent = fmtPct(tpPct);
+      document.getElementById('lvSLpct').textContent = fmtPct(slPct2);
+      document.getElementById('lvRR').textContent   = '1 : ' + rr.toFixed(2);
+      document.getElementById('lvATR').textContent  = fmt(atr);
+      document.getElementById('levSafe').textContent  = '×' + lev.safe;
+      document.getElementById('levMod').textContent   = '×' + lev.mod;
+      document.getElementById('levRisk').textContent  = '×' + lev.risky;
+      document.getElementById('levExplain').textContent =
+        `Basé sur un SL à ~${lev.slPct}% du prix et un risque de ${riskPct}% du capital par trade. ` +
+        `Levier prudent = bonne survie long terme. Levier agressif = attention aux liquidations.`;
+    } else {
+      levWrap.style.display = 'none';
+    }
+
+    // Confiance
+    const confColor = conf >= 70 ? 'var(--green)' : conf >= 45 ? 'var(--amber)' : 'var(--red)';
+    document.getElementById('confPct').textContent = conf + '%';
+    document.getElementById('confPct').style.color = confColor;
+    document.getElementById('confFill').style.width      = conf + '%';
+    document.getElementById('confFill').style.background = confColor;
+
+    // Indicateurs détaillés
+    document.getElementById('indRows').innerHTML = indData.map(d => `
+      <div class="ind-row">
+        <span class="ind-name">${d.name}</span>
+        <span style="display:flex;align-items:center;gap:8px;">
+          <span class="ind-val ${d.sig === 'bull' ? 'bull' : d.sig === 'bear' ? 'bear' : 'neu'}">${d.val}</span>
+          <span class="ind-sig ${d.sig === 'bull' ? 'sig-bull' : d.sig === 'bear' ? 'sig-bear' : 'sig-neu'}">${d.str}</span>
+        </span>
+      </div>
+    `).join('');
+
+    // Log
+    const now = new Date().toLocaleTimeString('fr-FR');
+    const label = isLong ? 'LONG' : isShort ? 'SHORT' : 'ATTENDS';
+    const cls   = isLong ? 'long-entry' : isShort ? 'short-entry' : '';
+    logs.unshift({ now, pair: pair.replace('USDT', ''), tf, label, cls, price: fmt(price), conf });
+    if (logs.length > 20) logs.pop();
+    document.getElementById('logList').innerHTML = logs.map(l =>
+      `<div class="log-item ${l.cls}">${l.now} · ${l.pair} ${l.tf} → ${l.label} @ ${l.price} (${l.conf}%)</div>`
+    ).join('');
+
+  } catch (err) {
+    sigCard.className = 'signal-card wait';
+    document.getElementById('sigArrow').textContent = '!';
+    document.getElementById('sigWord').textContent  = 'ERREUR';
+    document.getElementById('sigSub').textContent   = err.message;
+    console.error(err);
+  }
+}
+
+// ─── COUNTDOWN ───
+function startTimer() {
+  clearInterval(timer);
+  cdVal = CD_MAX;
+  document.getElementById('cdFill').style.width = '100%';
+  timer = setInterval(() => {
+    cdVal--;
+    document.getElementById('cdNum').textContent = cdVal;
+    document.getElementById('cdFill').style.width = (cdVal / CD_MAX * 100) + '%';
+    if (cdVal <= 0) { analyze(); cdVal = CD_MAX; }
+  }, 1000);
+}
+
+function triggerAnalyze() { analyze(); startTimer(); }
+
+document.getElementById('pair').onchange = triggerAnalyze;
+document.getElementById('tf').onchange   = triggerAnalyze;
+document.getElementById('risk').onchange = triggerAnalyze;
+
+// Démarrage
+analyze();
+startTimer();
+</script>
+</body>
+</html>
