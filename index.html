@@ -10,9 +10,10 @@
   --bg:#0a0c0f;--surface:#111318;--surface2:#181c23;
   --border:#1f2430;--border2:#2a3040;--text:#e8eaf0;
   --muted:#5a6175;--muted2:#3a4155;
-  --green:#00e676;--green-dim:#00e67618;--green-mid:#00e67640;
-  --red:#ff4444;--red-dim:#ff444418;--red-mid:#ff444440;
+  --green:#00e676;--green-dim:#00e67618;
+  --red:#ff4444;--red-dim:#ff444418;
   --amber:#ffb300;--amber-dim:#ffb30022;--blue:#4fc3f7;
+  --purple:#b388ff;--purple-dim:#b388ff18;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;}
@@ -23,6 +24,7 @@ header{padding:.9rem 1.25rem;border-bottom:1px solid var(--border);display:flex;
 .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:5px;animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 .hright{display:flex;align-items:center;gap:14px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);}
+
 .controls{padding:1rem 1.25rem;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid var(--border);}
 select,input[type=number]{background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
 input[type=number]{width:105px;-moz-appearance:textfield;}
@@ -35,35 +37,67 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
 .cd-wrap{margin-left:auto;display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);}
 .cd-bar{width:70px;height:3px;background:var(--border2);border-radius:2px;overflow:hidden;}
 .cd-fill{height:100%;background:var(--green);border-radius:2px;transition:width 1s linear;}
+
+/* MODE TABS */
+.mode-bar{display:flex;gap:0;border-bottom:1px solid var(--border);}
+.mode-tab{flex:1;padding:.7rem;text-align:center;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);transition:all .2s;letter-spacing:.03em;}
+.mode-tab.active{color:var(--text);border-bottom-color:var(--green);}
+.mode-tab:hover{color:var(--text);}
+
 main{flex:1;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:10px;}
-.signal-card{border-radius:12px;padding:1.75rem 1.5rem;text-align:center;border:1px solid var(--border);background:var(--surface);transition:all .4s;position:relative;}
+
+/* SIGNAL */
+.signal-card{border-radius:12px;padding:1.5rem;text-align:center;border:1px solid var(--border);background:var(--surface);transition:all .4s;position:relative;}
 .signal-card.long{border-color:var(--green);background:var(--green-dim);}
 .signal-card.short{border-color:var(--red);background:var(--red-dim);}
-.signal-lbl{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.15em;color:var(--muted);margin-bottom:.9rem;}
-.signal-arrow{font-size:50px;line-height:1;margin-bottom:.4rem;transition:color .4s;}
-.signal-word{font-size:30px;font-weight:800;letter-spacing:.04em;transition:color .4s;}
-.signal-sub{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:.6rem;}
+.signal-lbl{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.15em;color:var(--muted);margin-bottom:.8rem;}
+.signal-arrow{font-size:46px;line-height:1;margin-bottom:.35rem;transition:color .4s;}
+.signal-word{font-size:28px;font-weight:800;letter-spacing:.04em;transition:color .4s;}
+.signal-sub{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:.5rem;}
 .long .signal-arrow,.long .signal-word{color:var(--green);}
 .short .signal-arrow,.short .signal-word{color:var(--red);}
 .wait .signal-arrow,.wait .signal-word{color:var(--muted);}
-.lock-badge{display:inline-flex;align-items:center;gap:5px;margin-top:.75rem;background:rgba(255,179,0,.15);color:var(--amber);border:1px solid rgba(255,179,0,.4);border-radius:20px;padding:4px 14px;font-size:11px;font-family:'IBM Plex Mono',monospace;}
+.lock-badge{display:inline-flex;align-items:center;gap:5px;margin-top:.7rem;background:rgba(255,179,0,.15);color:var(--amber);border:1px solid rgba(255,179,0,.4);border-radius:20px;padding:4px 14px;font-size:11px;font-family:'IBM Plex Mono',monospace;}
+
+/* MTF PANEL */
+.mtf-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.25rem;}
+.mtf-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);margin-bottom:10px;}
+.mtf-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+.mtf-row:last-child{border-bottom:none;}
+.mtf-tf{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);min-width:32px;}
+.mtf-bar-wrap{height:5px;background:var(--border2);border-radius:3px;overflow:hidden;}
+.mtf-bar{height:100%;border-radius:3px;transition:width .6s,background .6s;}
+.mtf-label{font-size:11px;font-family:'IBM Plex Mono',monospace;min-width:90px;text-align:right;}
+.mtf-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-family:'IBM Plex Mono',monospace;white-space:nowrap;}
+.badge-bull{background:var(--green-dim);color:var(--green);}
+.badge-bear{background:var(--red-dim);color:var(--red);}
+.badge-neu{background:var(--border2);color:var(--muted);}
+.mtf-role{font-size:10px;color:var(--purple);background:var(--purple-dim);border-radius:4px;padding:2px 7px;font-family:'IBM Plex Mono',monospace;}
+
+/* PRICE */
 .price-bar{display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.25rem;}
 .price-main{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;}
 .price-chg{font-family:'IBM Plex Mono',monospace;font-size:13px;}
 .up{color:var(--green);}.dn{color:var(--red);}
 .price-pair{font-size:11px;color:var(--muted);letter-spacing:.07em;margin-bottom:3px;}
+
+/* LEVELS */
 .levels-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .level-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.25rem;}
 .level-lbl{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);margin-bottom:5px;}
 .level-val{font-size:16px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
 .green{color:var(--green);}.red2{color:var(--red);}.amber2{color:var(--amber);}.blue2{color:var(--blue);}
 .level-sub{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:3px;}
+
+/* CAPITAL */
 .capital-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.25rem;grid-column:1/-1;}
 .cap-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);margin-bottom:10px;}
 .cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;}
 .cap-item{background:var(--surface2);border-radius:8px;padding:.6rem .4rem;}
 .cap-item-lbl{font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:4px;}
 .cap-item-val{font-size:15px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+
+/* LEVIER */
 .lev-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.25rem;grid-column:1/-1;}
 .lev-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .lev-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);}
@@ -80,6 +114,8 @@ main{flex:1;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:10px;}
 .lev-opt.risk{border-color:var(--red);background:var(--red-dim);}
 .lev-opt.risk .lev-x{color:var(--red);}
 .lev-note{margin-top:10px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);line-height:1.6;}
+
+/* CONF */
 .conf-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.25rem;}
 .conf-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
 .conf-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);}
@@ -96,12 +132,23 @@ main{flex:1;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:10px;}
 .sig-bull{background:var(--green-dim);color:var(--green);}
 .sig-bear{background:var(--red-dim);color:var(--red);}
 .sig-neu{background:var(--border2);color:var(--muted);}
+
+/* DURÉE ESTIMÉE */
+.duration-card{background:var(--surface);border:1px solid var(--purple);border-radius:10px;padding:.9rem 1.25rem;display:flex;justify-content:space-between;align-items:center;}
+.dur-left{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);}
+.dur-val{font-size:15px;font-weight:600;color:var(--purple);font-family:'IBM Plex Mono',monospace;}
+.dur-sub{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:3px;}
+
+/* LOG */
 .log-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.25rem;}
 .log-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);margin-bottom:8px;}
 .log-list{display:flex;flex-direction:column;gap:4px;max-height:110px;overflow-y:auto;}
 .log-item{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);}
 .log-item.l{color:var(--green);}.log-item.s{color:var(--red);}
+
 footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted2);text-align:center;line-height:1.6;}
+
+/* MODE SCALP = timeframe court visible, MODE SWING = timeframe long visible */
 </style>
 </head>
 <body>
@@ -113,6 +160,12 @@ footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);font-size:11px;
     <span id="clock">--:--:--</span>
   </div>
 </header>
+
+<!-- ONGLETS MODE -->
+<div class="mode-bar">
+  <div class="mode-tab active" id="tabScalp" onclick="setMode('scalp')">⚡ SCALP (minutes)</div>
+  <div class="mode-tab" id="tabSwing" onclick="setMode('swing')">📈 SWING (heures)</div>
+</div>
 
 <div class="controls">
   <select id="source">
@@ -130,20 +183,13 @@ footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);font-size:11px;
     <option value="AVAXUSDT">AVAX/USDT</option>
     <option value="HYPEUSDT">HYPE/USDT</option>
   </select>
-  <select id="tf">
-    <option value="1m">1 min</option>
-    <option value="3m">3 min</option>
-    <option value="5m" selected>5 min</option>
-    <option value="15m">15 min</option>
-    <option value="30m">30 min</option>
-  </select>
   <select id="risk">
     <option value="1">Risque 1%</option>
     <option value="2" selected>Risque 2%</option>
     <option value="3">Risque 3%</option>
     <option value="5">Risque 5%</option>
   </select>
-  <input type="number" id="capital" value="30" min="1" placeholder="Capital €" title="Ton capital total en euros">
+  <input type="number" id="capital" value="30" min="1" placeholder="Capital €">
   <button class="btn" onclick="manualAnalyze()">↻ Analyser</button>
   <div class="cd-wrap">
     <span>actu. <span id="cdNum">30</span>s</span>
@@ -153,8 +199,9 @@ footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);font-size:11px;
 
 <main>
 
+  <!-- SIGNAL PRINCIPAL -->
   <div class="signal-card wait" id="sigCard">
-    <div class="signal-lbl">SIGNAL SCALP FUTURES</div>
+    <div class="signal-lbl" id="sigLbl">SIGNAL SCALP FUTURES</div>
     <div class="signal-arrow" id="sigArrow">·</div>
     <div class="signal-word" id="sigWord">Connexion...</div>
     <div class="signal-sub" id="sigSub">Récupération des données...</div>
@@ -165,6 +212,14 @@ footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);font-size:11px;
     <button class="btn btn-unlock" onclick="unlock()">✓ Nouveau signal</button>
   </div>
 
+  <!-- ANALYSE MULTI-TIMEFRAME -->
+  <div class="mtf-panel">
+    <div class="mtf-title">ANALYSE MULTI-TIMEFRAME</div>
+    <div id="mtfRows"><div class="ind-row"><span class="ind-name" style="font-size:12px;">En attente...</span></div></div>
+    <div style="margin-top:10px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);line-height:1.6;" id="mtfConclusion"></div>
+  </div>
+
+  <!-- PRIX -->
   <div class="price-bar">
     <div>
       <div class="price-pair" id="pricePair">— / USDT</div>
@@ -176,6 +231,18 @@ footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);font-size:11px;
     </div>
   </div>
 
+  <!-- DURÉE ESTIMÉE -->
+  <div class="duration-card" id="durationCard" style="display:none;">
+    <div>
+      <div class="dur-left">DURÉE ESTIMÉE DU TRADE</div>
+      <div class="dur-val" id="durVal">—</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="dur-sub" id="durSub">—</div>
+    </div>
+  </div>
+
+  <!-- NIVEAUX TP / SL -->
   <div class="levels-grid" id="levelsWrap" style="display:none;">
     <div class="level-card">
       <div class="level-lbl">TAKE PROFIT</div>
@@ -195,7 +262,7 @@ footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);font-size:11px;
     <div class="level-card">
       <div class="level-lbl">VOLATILITÉ (ATR)</div>
       <div class="level-val blue2" id="lvATR">—</div>
-      <div class="level-sub">mouvement moyen</div>
+      <div class="level-sub">mouvement moyen / bougie</div>
     </div>
 
     <div class="capital-card">
@@ -223,29 +290,18 @@ footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);font-size:11px;
         <div class="lev-warn">⚠ Futures uniquement</div>
       </div>
       <div class="lev-options">
-        <div class="lev-opt safe">
-          <div class="lev-x" id="levSafe">×—</div>
-          <div class="lev-desc">Prudent</div>
-          <div class="lev-eur green" id="levSafeEur">—</div>
-        </div>
-        <div class="lev-opt mod">
-          <div class="lev-x" id="levMod">×—</div>
-          <div class="lev-desc">Modéré</div>
-          <div class="lev-eur amber2" id="levModEur">—</div>
-        </div>
-        <div class="lev-opt risk">
-          <div class="lev-x" id="levRisk">×—</div>
-          <div class="lev-desc">Agressif</div>
-          <div class="lev-eur red2" id="levRiskEur">—</div>
-        </div>
+        <div class="lev-opt safe"><div class="lev-x" id="levSafe">×—</div><div class="lev-desc">Prudent</div><div class="lev-eur green" id="levSafeEur">—</div></div>
+        <div class="lev-opt mod"><div class="lev-x" id="levMod">×—</div><div class="lev-desc">Modéré</div><div class="lev-eur amber2" id="levModEur">—</div></div>
+        <div class="lev-opt risk"><div class="lev-x" id="levRisk">×—</div><div class="lev-desc">Agressif</div><div class="lev-eur red2" id="levRiskEur">—</div></div>
       </div>
       <div class="lev-note" id="levNote">—</div>
     </div>
   </div>
 
+  <!-- INDICATEURS TIMEFRAME ENTRÉE -->
   <div class="conf-card">
     <div class="conf-header">
-      <div class="conf-title">CONFIANCE DU SIGNAL</div>
+      <div class="conf-title" id="confTitle">CONFIANCE DU SIGNAL</div>
       <div class="conf-pct" id="confPct">—</div>
     </div>
     <div class="conf-bar"><div class="conf-fill" id="confFill" style="width:0%;background:var(--muted);"></div></div>
@@ -260,263 +316,359 @@ footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);font-size:11px;
 </main>
 
 <footer>
-  ScalpRadar v2 · Données Binance &amp; BingX temps réel · Aucune donnée collectée<br>
+  ScalpRadar v3 · Multi-Timeframe · Binance &amp; BingX · Aucune donnée collectée<br>
   ⚠ Outil d'aide uniquement. Le trading de futures comporte un risque de perte totale du capital.
 </footer>
 
 <script>
-let cdVal=30,timer=null,logs=[],locked=false;
-const CD_MAX=30;
+// ── CONFIG PAR MODE ──
+const MODES = {
+  scalp: {
+    trend: '1h',   // timeframe tendance
+    entry: '5m',   // timeframe entrée
+    confirm: '15m',// timeframe confirmation
+    label: 'SIGNAL SCALP FUTURES',
+    duration: '5 à 30 minutes',
+    durSub: 'Scalp court terme',
+    atrTP: 2.5, atrSL: 1.5
+  },
+  swing: {
+    trend: '4h',
+    entry: '1h',
+    confirm: '15m',
+    label: 'SIGNAL SWING FUTURES',
+    duration: '2 à 12 heures',
+    durSub: 'Swing moyen terme',
+    atrTP: 3.5, atrSL: 1.8
+  }
+};
 
-setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('fr-FR');},1000);
+let mode = 'scalp';
+let cdVal = 30, timer = null, logs = [], locked = false;
+const CD_MAX = 30;
 
-function fmt(n){
-  if(n>=1000)return'$'+n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
-  if(n>=1)return'$'+n.toFixed(4);
-  return'$'+n.toFixed(6);
+setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString('fr-FR'); }, 1000);
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('tabScalp').classList.toggle('active', m === 'scalp');
+  document.getElementById('tabSwing').classList.toggle('active', m === 'swing');
+  manualAnalyze();
 }
-function fmtPct(n){return(n>=0?'+':'')+n.toFixed(2)+'%';}
 
-function calcEMA(d,p){
-  const k=2/(p+1);let e=d[0];const r=[e];
-  for(let i=1;i<d.length;i++){e=d[i]*k+e*(1-k);r.push(e);}
+function fmt(n) {
+  if (n >= 1000) return '$' + n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (n >= 1) return '$' + n.toFixed(4);
+  return '$' + n.toFixed(6);
+}
+function fmtPct(n) { return (n >= 0 ? '+' : '') + n.toFixed(2) + '%'; }
+
+function calcEMA(d, p) {
+  const k = 2 / (p + 1); let e = d[0]; const r = [e];
+  for (let i = 1; i < d.length; i++) { e = d[i] * k + e * (1 - k); r.push(e); }
   return r;
 }
-function calcRSI(cl,p){
-  const ch=[];for(let i=1;i<cl.length;i++)ch.push(cl[i]-cl[i-1]);
-  let ag=0,al=0;
-  for(let i=0;i<p;i++){if(ch[i]>0)ag+=ch[i];else al-=ch[i];}
-  ag/=p;al/=p;
-  for(let i=p;i<ch.length;i++){
-    ag=(ag*(p-1)+(ch[i]>0?ch[i]:0))/p;
-    al=(al*(p-1)+(ch[i]<0?-ch[i]:0))/p;
+function calcRSI(cl, p) {
+  const ch = []; for (let i = 1; i < cl.length; i++) ch.push(cl[i] - cl[i - 1]);
+  let ag = 0, al = 0;
+  for (let i = 0; i < p; i++) { if (ch[i] > 0) ag += ch[i]; else al -= ch[i]; }
+  ag /= p; al /= p;
+  for (let i = p; i < ch.length; i++) {
+    ag = (ag * (p - 1) + (ch[i] > 0 ? ch[i] : 0)) / p;
+    al = (al * (p - 1) + (ch[i] < 0 ? -ch[i] : 0)) / p;
   }
-  return al===0?100:100-(100/(1+ag/al));
+  return al === 0 ? 100 : 100 - (100 / (1 + ag / al));
 }
-function calcBB(cl,p,m){
-  const s=cl.slice(-p),sma=s.reduce((a,b)=>a+b)/p;
-  const std=Math.sqrt(s.reduce((a,v)=>a+Math.pow(v-sma,2),0)/p);
-  const u=sma+m*std,l=sma-m*std;
-  return{u,l,pctB:(cl[cl.length-1]-l)/(u-l)};
+function calcBB(cl, p, m) {
+  const s = cl.slice(-p), sma = s.reduce((a, b) => a + b) / p;
+  const std = Math.sqrt(s.reduce((a, v) => a + Math.pow(v - sma, 2), 0) / p);
+  const u = sma + m * std, l = sma - m * std;
+  return { u, l, pctB: (cl[cl.length - 1] - l) / (u - l) };
 }
-function calcMACD(cl){
-  const e12=calcEMA(cl,12),e26=calcEMA(cl,26);
-  const ml=e12.map((v,i)=>v-e26[i]).slice(26);
-  const sl=calcEMA(ml,9);
-  return{hist:ml[ml.length-1]-sl[sl.length-1],prevHist:ml[ml.length-2]-sl[sl.length-2]};
+function calcMACD(cl) {
+  const e12 = calcEMA(cl, 12), e26 = calcEMA(cl, 26);
+  const ml = e12.map((v, i) => v - e26[i]).slice(26);
+  const sl = calcEMA(ml, 9);
+  return { hist: ml[ml.length - 1] - sl[sl.length - 1], prevHist: ml[ml.length - 2] - sl[sl.length - 2] };
 }
-function calcATR(hi,lo,cl,p){
-  const trs=[];
-  for(let i=1;i<cl.length;i++)trs.push(Math.max(hi[i]-lo[i],Math.abs(hi[i]-cl[i-1]),Math.abs(lo[i]-cl[i-1])));
-  return trs.slice(-p).reduce((a,b)=>a+b)/p;
+function calcATR(hi, lo, cl, p) {
+  const trs = [];
+  for (let i = 1; i < cl.length; i++) trs.push(Math.max(hi[i] - lo[i], Math.abs(hi[i] - cl[i - 1]), Math.abs(lo[i] - cl[i - 1])));
+  return trs.slice(-p).reduce((a, b) => a + b) / p;
 }
-function calcVol(vols){
-  const last=vols[vols.length-1],avg=vols.slice(-21,-1).reduce((a,b)=>a+b)/20;
-  return{ratio:last/avg};
+function calcVol(vols) {
+  const last = vols[vols.length - 1], avg = vols.slice(-21, -1).reduce((a, b) => a + b) / 20;
+  return { ratio: last / avg };
 }
-function suggestLev(atr,price,riskPct){
-  const slPct=(atr/price)*100*1.5;
-  const maxL=riskPct/slPct;
-  return{
-    safe:Math.max(1,Math.min(3,Math.floor(maxL*0.5))),
-    mod:Math.max(2,Math.min(10,Math.floor(maxL*0.8))),
-    risky:Math.max(3,Math.min(20,Math.floor(maxL*1.2))),
-    slPct:slPct.toFixed(2)
+function scoreFromData(closes, highs, lows, vols) {
+  const rsi = calcRSI(closes, 14);
+  const bb = calcBB(closes, 20, 2);
+  const macd = calcMACD(closes);
+  const vol = calcVol(vols);
+  const e9 = calcEMA(closes, 9), e21 = calcEMA(closes, 21);
+  const ce9 = e9[e9.length - 1], pe9 = e9[e9.length - 2];
+  const ce21 = e21[e21.length - 1], pe21 = e21[e21.length - 2];
+  const price = closes[closes.length - 1], prev = closes[closes.length - 2];
+  let score = 0;
+  if (rsi < 30) score += 2; else if (rsi < 42) score += 1; else if (rsi > 70) score -= 2; else if (rsi > 58) score -= 1;
+  if (pe9 < pe21 && ce9 > ce21) score += 2; else if (pe9 > pe21 && ce9 < ce21) score -= 2; else if (ce9 > ce21) score += 1; else score -= 1;
+  if (macd.hist > 0 && macd.hist > macd.prevHist) score += 2; else if (macd.hist > 0) score += 1; else if (macd.hist < 0 && macd.hist < macd.prevHist) score -= 2; else score -= 1;
+  if (bb.pctB < 0.1) score += 2; else if (bb.pctB < 0.3) score += 1; else if (bb.pctB > 0.9) score -= 2; else if (bb.pctB > 0.7) score -= 1;
+  const up = price > prev;
+  if (vol.ratio > 1.5) { if (up) score += 1; else score -= 1; }
+  return { score, rsi, bb, macd, vol, e9, e21, ce9, ce21 };
+}
+function getIndDetails(closes, highs, lows, vols) {
+  const rsi = calcRSI(closes, 14);
+  const bb = calcBB(closes, 20, 2);
+  const macd = calcMACD(closes);
+  const vol = calcVol(vols);
+  const e9 = calcEMA(closes, 9), e21 = calcEMA(closes, 21);
+  const ce9 = e9[e9.length - 1], pe9 = e9[e9.length - 2];
+  const ce21 = e21[e21.length - 1], pe21 = e21[e21.length - 2];
+  const price = closes[closes.length - 1], prev = closes[closes.length - 2];
+  const inds = [];
+  let rs, rss, rst;
+  if (rsi < 30) { rs = 2; rss = 'bull'; rst = 'Survendu → LONG'; } else if (rsi < 42) { rs = 1; rss = 'bull'; rst = 'Zone achat'; } else if (rsi > 70) { rs = -2; rss = 'bear'; rst = 'Suracheté → SHORT'; } else if (rsi > 58) { rs = -1; rss = 'bear'; rst = 'Zone vente'; } else { rs = 0; rss = 'neu'; rst = 'Neutre'; }
+  inds.push({ n: 'RSI (14)', v: rsi.toFixed(1), s: rss, t: rst });
+  let es, ess, est;
+  if (pe9 < pe21 && ce9 > ce21) { es = 2; ess = 'bull'; est = 'Golden cross ↑'; } else if (pe9 > pe21 && ce9 < ce21) { es = -2; ess = 'bear'; est = 'Death cross ↓'; } else if (ce9 > ce21) { es = 1; ess = 'bull'; est = 'Tendance haussière'; } else { es = -1; ess = 'bear'; est = 'Tendance baissière'; }
+  inds.push({ n: 'EMA 9/21', v: (((ce9 - ce21) / ce21) * 100).toFixed(3) + '%', s: ess, t: est });
+  let ms, mss, mst;
+  if (macd.hist > 0 && macd.hist > macd.prevHist) { ms = 2; mss = 'bull'; mst = 'Momentum ↑ accélère'; } else if (macd.hist > 0) { ms = 1; mss = 'bull'; mst = 'Momentum haussier'; } else if (macd.hist < 0 && macd.hist < macd.prevHist) { ms = -2; mss = 'bear'; mst = 'Momentum ↓ accélère'; } else { ms = -1; mss = 'bear'; mst = 'Momentum baissier'; }
+  inds.push({ n: 'MACD', v: macd.hist.toFixed(5), s: mss, t: mst });
+  let bs, bss, bst;
+  if (bb.pctB < 0.1) { bs = 2; bss = 'bull'; bst = 'Bande inf. → rebond'; } else if (bb.pctB < 0.3) { bs = 1; bss = 'bull'; bst = 'Zone basse'; } else if (bb.pctB > 0.9) { bs = -2; bss = 'bear'; bst = 'Bande sup. → retour'; } else if (bb.pctB > 0.7) { bs = -1; bss = 'bear'; bst = 'Zone haute'; } else { bs = 0; bss = 'neu'; bst = 'Centre (' + (bb.pctB * 100).toFixed(0) + '%)'; }
+  inds.push({ n: 'Bollinger %B', v: (bb.pctB * 100).toFixed(1) + '%', s: bss, t: bst });
+  const up = price > prev;
+  let vs, vss, vst;
+  if (vol.ratio > 1.8) { vs = up ? 1 : -1; vss = up ? 'bull' : 'bear'; vst = 'Vol. fort ×' + vol.ratio.toFixed(1); } else if (vol.ratio > 1.3) { vs = up ? 1 : -1; vss = up ? 'bull' : 'bear'; vst = 'Vol. élevé ×' + vol.ratio.toFixed(1); } else if (vol.ratio < 0.6) { vs = 0; vss = 'neu'; vst = 'Vol. faible'; } else { vs = 0; vss = 'neu'; vst = 'Vol. normal ×' + vol.ratio.toFixed(1); }
+  inds.push({ n: 'Volume/Moy.', v: '×' + vol.ratio.toFixed(2), s: vss, t: vst });
+  return inds;
+}
+function suggestLev(atr, price, riskPct) {
+  const slPct = (atr / price) * 100 * 1.5;
+  const maxL = riskPct / slPct;
+  return {
+    safe: Math.max(1, Math.min(3, Math.floor(maxL * 0.5))),
+    mod: Math.max(2, Math.min(10, Math.floor(maxL * 0.8))),
+    risky: Math.max(3, Math.min(20, Math.floor(maxL * 1.2))),
+    slPct: slPct.toFixed(2)
   };
 }
 
-async function fetchData(pair,tf,source){
-  if(source==='bingx'){
-    const sym=pair.replace('USDT','')+'-USDT';
-    const url='https://open-api.bingx.com/openApi/swap/v2/quote/klines?symbol='+sym+'&interval='+tf+'&limit=120';
-    try{
-      const r=await fetch(url);if(!r.ok)throw new Error('BingX '+r.status);
-      const j=await r.json();const d=j.data||j;
-      if(!Array.isArray(d)||d.length<50)throw new Error('Données insuffisantes');
-      return{closes:d.map(c=>parseFloat(c[4]||c.close)),highs:d.map(c=>parseFloat(c[2]||c.high)),lows:d.map(c=>parseFloat(c[3]||c.low)),vols:d.map(c=>parseFloat(c[5]||c.volume)),src:'BingX'};
-    }catch(e){throw new Error('BingX : '+e.message+' — essaie Binance');}
+async function fetchKlines(pair, tf, source) {
+  if (source === 'bingx') {
+    const sym = pair.replace('USDT', '') + '-USDT';
+    const url = 'https://open-api.bingx.com/openApi/swap/v2/quote/klines?symbol=' + sym + '&interval=' + tf + '&limit=150';
+    try {
+      const r = await fetch(url); if (!r.ok) throw new Error('BingX ' + r.status);
+      const j = await r.json(); const d = j.data || j;
+      if (!Array.isArray(d) || d.length < 50) throw new Error('Données insuffisantes');
+      return { closes: d.map(c => parseFloat(c[4] || c.close)), highs: d.map(c => parseFloat(c[2] || c.high)), lows: d.map(c => parseFloat(c[3] || c.low)), vols: d.map(c => parseFloat(c[5] || c.volume)) };
+    } catch (e) { throw new Error('BingX : ' + e.message); }
   }
-  const url='https://api.binance.com/api/v3/klines?symbol='+pair+'&interval='+tf+'&limit=120';
+  const url = 'https://api.binance.com/api/v3/klines?symbol=' + pair + '&interval=' + tf + '&limit=150';
   let d;
-  try{const r=await fetch(url);if(!r.ok)throw new Error(r.status);d=await r.json();}
-  catch(e){
-    const r2=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(url));
-    if(!r2.ok)throw new Error('Connexion impossible — mets le fichier sur GitHub Pages');
-    d=await r2.json();
+  try { const r = await fetch(url); if (!r.ok) throw new Error(r.status); d = await r.json(); }
+  catch (e) {
+    const r2 = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+    if (!r2.ok) throw new Error('Connexion impossible — mets le fichier sur GitHub Pages');
+    d = await r2.json();
   }
-  if(!Array.isArray(d)||d.length<50)throw new Error('Données insuffisantes');
-  return{closes:d.map(c=>parseFloat(c[4])),highs:d.map(c=>parseFloat(c[2])),lows:d.map(c=>parseFloat(c[3])),vols:d.map(c=>parseFloat(c[5])),src:'Binance'};
+  if (!Array.isArray(d) || d.length < 50) throw new Error('Données insuffisantes');
+  return { closes: d.map(c => parseFloat(c[4])), highs: d.map(c => parseFloat(c[2])), lows: d.map(c => parseFloat(c[3])), vols: d.map(c => parseFloat(c[5])) };
 }
 
-async function analyze(){
-  if(locked)return;
-  const pair=document.getElementById('pair').value;
-  const tf=document.getElementById('tf').value;
-  const riskPct=parseFloat(document.getElementById('risk').value);
-  const capital=parseFloat(document.getElementById('capital').value)||30;
-  const source=document.getElementById('source').value;
-  const sigCard=document.getElementById('sigCard');
-  try{
-    const{closes,highs,lows,vols,src}=await fetchData(pair,tf,source);
-    const price=closes[closes.length-1],prev=closes[closes.length-2];
-    const chgPct=((price-prev)/prev)*100;
-    const rsi=calcRSI(closes,14),bb=calcBB(closes,20,2),macd=calcMACD(closes);
-    const atr=calcATR(highs,lows,closes,14),vol=calcVol(vols);
-    const e9=calcEMA(closes,9),e21=calcEMA(closes,21);
-    const ce9=e9[e9.length-1],pe9=e9[e9.length-2],ce21=e21[e21.length-1],pe21=e21[e21.length-2];
+async function analyze() {
+  if (locked) return;
+  const pair = document.getElementById('pair').value;
+  const riskPct = parseFloat(document.getElementById('risk').value);
+  const capital = parseFloat(document.getElementById('capital').value) || 30;
+  const source = document.getElementById('source').value;
+  const cfg = MODES[mode];
+  const sigCard = document.getElementById('sigCard');
 
-    let score=0;const inds=[];
+  try {
+    // ── Fetch 3 timeframes en parallèle ──
+    const [dTrend, dEntry, dConfirm] = await Promise.all([
+      fetchKlines(pair, cfg.trend, source),
+      fetchKlines(pair, cfg.entry, source),
+      fetchKlines(pair, cfg.confirm, source)
+    ]);
 
-    let rs,rss,rst;
-    if(rsi<30){rs=2;rss='bull';rst='Survendu → LONG';}
-    else if(rsi<42){rs=1;rss='bull';rst='Zone achat';}
-    else if(rsi>70){rs=-2;rss='bear';rst='Suracheté → SHORT';}
-    else if(rsi>58){rs=-1;rss='bear';rst='Zone vente';}
-    else{rs=0;rss='neu';rst='Neutre';}
-    score+=rs;inds.push({n:'RSI (14)',v:rsi.toFixed(1),s:rss,t:rst});
+    const scoreTrend = scoreFromData(dTrend.closes, dTrend.highs, dTrend.lows, dTrend.vols);
+    const scoreEntry = scoreFromData(dEntry.closes, dEntry.highs, dEntry.lows, dEntry.vols);
+    const scoreConfirm = scoreFromData(dConfirm.closes, dConfirm.highs, dConfirm.lows, dConfirm.vols);
 
-    let es,ess,est;
-    if(pe9<pe21&&ce9>ce21){es=2;ess='bull';est='Golden cross ↑';}
-    else if(pe9>pe21&&ce9<ce21){es=-2;ess='bear';est='Death cross ↓';}
-    else if(ce9>ce21){es=1;ess='bull';est='Tendance haussière';}
-    else{es=-1;ess='bear';est='Tendance baissière';}
-    score+=es;inds.push({n:'EMA 9/21',v:(((ce9-ce21)/ce21)*100).toFixed(3)+'%',s:ess,t:est});
+    const price = dEntry.closes[dEntry.closes.length - 1];
+    const prev = dEntry.closes[dEntry.closes.length - 2];
+    const chgPct = ((price - prev) / prev) * 100;
+    const atr = calcATR(dEntry.highs, dEntry.lows, dEntry.closes, 14);
 
-    let ms,mss,mst;
-    if(macd.hist>0&&macd.hist>macd.prevHist){ms=2;mss='bull';mst='Momentum ↑ accélère';}
-    else if(macd.hist>0){ms=1;mss='bull';mst='Momentum haussier';}
-    else if(macd.hist<0&&macd.hist<macd.prevHist){ms=-2;mss='bear';mst='Momentum ↓ accélère';}
-    else{ms=-1;mss='bear';mst='Momentum baissier';}
-    score+=ms;inds.push({n:'MACD',v:macd.hist.toFixed(5),s:mss,t:mst});
+    // ── Logique de décision multi-TF ──
+    // Le trend doit être aligné (>=2), l'entry doit confirmer (>=3)
+    // Le confirm sert à valider
+    const trendBull = scoreTrend.score >= 2;
+    const trendBear = scoreTrend.score <= -2;
+    const entryBull = scoreEntry.score >= 3;
+    const entryBear = scoreEntry.score <= -3;
+    const confirmBull = scoreConfirm.score > 0;
+    const confirmBear = scoreConfirm.score < 0;
 
-    let bs,bss,bst;
-    if(bb.pctB<0.1){bs=2;bss='bull';bst='Bande inf. → rebond';}
-    else if(bb.pctB<0.3){bs=1;bss='bull';bst='Zone basse';}
-    else if(bb.pctB>0.9){bs=-2;bss='bear';bst='Bande sup. → retour';}
-    else if(bb.pctB>0.7){bs=-1;bss='bear';bst='Zone haute';}
-    else{bs=0;bss='neu';bst='Centre ('+(bb.pctB*100).toFixed(0)+'%)';}
-    score+=bs;inds.push({n:'Bollinger %B',v:(bb.pctB*100).toFixed(1)+'%',s:bss,t:bst});
+    const isLong = trendBull && entryBull && confirmBull;
+    const isShort = trendBear && entryBear && confirmBear;
+    const isWait = !isLong && !isShort;
 
-    let vs,vss,vst;
-    const up=price>prev;
-    if(vol.ratio>1.8){vs=up?1:-1;vss=up?'bull':'bear';vst='Vol. fort ×'+vol.ratio.toFixed(1);}
-    else if(vol.ratio>1.3){vs=up?1:-1;vss=up?'bull':'bear';vst='Vol. élevé ×'+vol.ratio.toFixed(1);}
-    else if(vol.ratio<0.6){vs=0;vss='neu';vst='Vol. faible';}
-    else{vs=0;vss='neu';vst='Vol. normal ×'+vol.ratio.toFixed(1);}
-    score+=vs;inds.push({n:'Volume/Moy.',v:'×'+vol.ratio.toFixed(2),s:vss,t:vst});
+    // Confiance = alignement des 3 TF
+    let alignCount = 0;
+    if (isLong) { if (trendBull) alignCount++; if (entryBull) alignCount++; if (confirmBull) alignCount++; }
+    if (isShort) { if (trendBear) alignCount++; if (entryBear) alignCount++; if (confirmBear) alignCount++; }
+    const conf = isWait ? Math.min(40, Math.round((Math.abs(scoreEntry.score) / 9) * 60)) : Math.round(50 + alignCount * 16);
 
-    const isLong=score>=3,isShort=score<=-3,isWait=!isLong&&!isShort;
-    const conf=Math.round((Math.abs(score)/9)*100);
+    // ── PANEL MTF ──
+    const tfLabels = [
+      { tf: cfg.trend, sc: scoreTrend.score, role: 'Tendance' },
+      { tf: cfg.confirm, sc: scoreConfirm.score, role: 'Confirmation' },
+      { tf: cfg.entry, sc: scoreEntry.score, role: 'Entrée' }
+    ];
+    document.getElementById('mtfRows').innerHTML = tfLabels.map(row => {
+      const pct = Math.min(100, (Math.abs(row.sc) / 9) * 100);
+      const bull = row.sc >= 2, bear = row.sc <= -2;
+      const color = bull ? 'var(--green)' : bear ? 'var(--red)' : 'var(--muted)';
+      const badgeCls = bull ? 'badge-bull' : bear ? 'badge-bear' : 'badge-neu';
+      const badgeTxt = bull ? (row.sc >= 5 ? 'Haussier fort' : 'Haussier') : bear ? (row.sc <= -5 ? 'Baissier fort' : 'Baissier') : 'Neutre';
+      return '<div class="mtf-row">' +
+        '<span class="mtf-tf">' + row.tf + '</span>' +
+        '<div class="mtf-bar-wrap"><div class="mtf-bar" style="width:' + pct + '%;background:' + color + '"></div></div>' +
+        '<span class="mtf-label ' + (bull ? 'bull' : bear ? 'bear' : 'neu') + '"><span class="mtf-badge ' + badgeCls + '">' + badgeTxt + '</span></span>' +
+        '<span class="mtf-role">' + row.role + '</span>' +
+        '</div>';
+    }).join('');
 
-    // Prix
-    document.getElementById('pricePair').textContent=pair.replace('USDT','')+' / USDT · '+tf;
-    document.getElementById('priceVal').textContent=fmt(price);
-    const cEl=document.getElementById('priceChg');
-    cEl.textContent=(chgPct>=0?'+':'')+chgPct.toFixed(3)+'%';
-    cEl.className='price-chg '+(chgPct>=0?'up':'dn');
-    document.getElementById('priceSource').textContent='Source : '+src;
+    // Conclusion MTF
+    let conc = '';
+    if (isLong) conc = '✓ Les 3 timeframes sont alignés à la hausse — signal LONG validé.';
+    else if (isShort) conc = '✓ Les 3 timeframes sont alignés à la baisse — signal SHORT validé.';
+    else if (trendBull && !entryBull) conc = '⏳ Tendance haussière sur ' + cfg.trend + ' mais pas encore de signal sur ' + cfg.entry + '. Patiente.';
+    else if (trendBear && !entryBear) conc = '⏳ Tendance baissière sur ' + cfg.trend + ' mais pas encore de signal sur ' + cfg.entry + '. Patiente.';
+    else conc = '→ Aucun alignement clair entre les timeframes. Ne pas trader.';
+    document.getElementById('mtfConclusion').textContent = conc;
 
-    // Signal
-    sigCard.className='signal-card '+(isLong?'long':isShort?'short':'wait');
-    document.getElementById('sigArrow').textContent=isLong?'↑':isShort?'↓':'→';
-    document.getElementById('sigWord').textContent=isLong?'LONG':isShort?'SHORT':'ATTENDS';
-    const cLabel=conf>=70?'Confiance élevée':conf>=45?'Confiance moyenne':'Signal faible';
-    document.getElementById('sigSub').textContent=isWait?'Pas de signal clair — patiente':cLabel+' · Score '+(score>0?'+':'')+score+'/9';
+    // ── SIGNAL ──
+    document.getElementById('sigLbl').textContent = cfg.label;
+    sigCard.className = 'signal-card ' + (isLong ? 'long' : isShort ? 'short' : 'wait');
+    document.getElementById('sigArrow').textContent = isLong ? '↑' : isShort ? '↓' : '→';
+    document.getElementById('sigWord').textContent = isLong ? 'LONG' : isShort ? 'SHORT' : 'ATTENDS';
+    const cLabel = conf >= 80 ? 'Confiance élevée' : conf >= 60 ? 'Confiance bonne' : conf >= 40 ? 'Confiance moyenne' : 'Signal faible';
+    document.getElementById('sigSub').textContent = isWait ? 'Timeframes non alignés — patiente' : cLabel + ' · ' + alignCount + '/3 TF alignés';
 
-    // Verrouillage auto sur signal
-    if(!isWait){
-      locked=true;
-      document.getElementById('lockBadge').style.display='inline-flex';
-      document.getElementById('unlockWrap').style.display='block';
+    if (!isWait) {
+      locked = true;
+      document.getElementById('lockBadge').style.display = 'inline-flex';
+      document.getElementById('unlockWrap').style.display = 'block';
     }
 
-    // Niveaux
-    const lw=document.getElementById('levelsWrap');
-    if(!isWait){
-      lw.style.display='grid';
-      const tp=isLong?price+atr*2.5:price-atr*2.5;
-      const sl2=isLong?price-atr*1.5:price+atr*1.5;
-      const tpP=((tp-price)/price)*100;
-      const slP=((sl2-price)/price)*100;
-      const rr=Math.abs(tp-price)/Math.abs(sl2-price);
-      document.getElementById('lvTP').textContent=fmt(tp);
-      document.getElementById('lvTPpct').textContent=(tpP>=0?'+':'')+tpP.toFixed(2)+'%';
-      document.getElementById('lvSL').textContent=fmt(sl2);
-      document.getElementById('lvSLpct').textContent=(slP>=0?'+':'')+slP.toFixed(2)+'%';
-      document.getElementById('lvRR').textContent='1 : '+rr.toFixed(2);
-      document.getElementById('lvATR').textContent=fmt(atr);
+    // ── PRIX ──
+    document.getElementById('pricePair').textContent = pair.replace('USDT', '') + ' / USDT';
+    document.getElementById('priceVal').textContent = fmt(price);
+    const cEl = document.getElementById('priceChg');
+    cEl.textContent = fmtPct(chgPct); cEl.className = 'price-chg ' + (chgPct >= 0 ? 'up' : 'dn');
+    document.getElementById('priceSource').textContent = 'Source : ' + (source === 'bingx' ? 'BingX' : 'Binance') + ' · ' + cfg.entry;
 
-      const lev=suggestLev(atr,price,riskPct);
-      const simS={pos:capital*lev.safe,gain:capital*lev.safe*(Math.abs(tpP)/100),loss:capital*lev.safe*(Math.abs(slP)/100)};
-      const simM={pos:capital*lev.mod,gain:capital*lev.mod*(Math.abs(tpP)/100),loss:capital*lev.mod*(Math.abs(slP)/100)};
-      const simR={pos:capital*lev.risky,gain:capital*lev.risky*(Math.abs(tpP)/100),loss:capital*lev.risky*(Math.abs(slP)/100)};
+    // ── DURÉE ──
+    const dc = document.getElementById('durationCard');
+    if (!isWait) {
+      dc.style.display = 'flex';
+      document.getElementById('durVal').textContent = cfg.duration;
+      document.getElementById('durSub').textContent = cfg.durSub;
+    } else { dc.style.display = 'none'; }
 
-      document.getElementById('levSafe').textContent='×'+lev.safe;
-      document.getElementById('levMod').textContent='×'+lev.mod;
-      document.getElementById('levRisk').textContent='×'+lev.risky;
-      document.getElementById('levSafeEur').textContent='+'+simS.gain.toFixed(2)+'€';
-      document.getElementById('levModEur').textContent='+'+simM.gain.toFixed(2)+'€';
-      document.getElementById('levRiskEur').textContent='+'+simR.gain.toFixed(2)+'€';
-      document.getElementById('levNote').textContent='SL ≈ '+lev.slPct+'% · '+capital+'€ capital · Prudent = position '+simS.pos.toFixed(0)+'€, perte max '+simS.loss.toFixed(2)+'€ si SL touché';
+    // ── NIVEAUX ──
+    const lw = document.getElementById('levelsWrap');
+    if (!isWait) {
+      lw.style.display = 'grid';
+      const tp = isLong ? price + atr * cfg.atrTP : price - atr * cfg.atrTP;
+      const sl = isLong ? price - atr * cfg.atrSL : price + atr * cfg.atrSL;
+      const tpP = ((tp - price) / price) * 100;
+      const slP = ((sl - price) / price) * 100;
+      const rr = Math.abs(tp - price) / Math.abs(sl - price);
+      document.getElementById('lvTP').textContent = fmt(tp);
+      document.getElementById('lvTPpct').textContent = fmtPct(tpP);
+      document.getElementById('lvSL').textContent = fmt(sl);
+      document.getElementById('lvSLpct').textContent = fmtPct(slP);
+      document.getElementById('lvRR').textContent = '1 : ' + rr.toFixed(2);
+      document.getElementById('lvATR').textContent = fmt(atr);
+      const lev = suggestLev(atr, price, riskPct);
+      const simS = { pos: capital * lev.safe, gain: capital * lev.safe * (Math.abs(tpP) / 100), loss: capital * lev.safe * (Math.abs(slP) / 100) };
+      const simM = { pos: capital * lev.mod, gain: capital * lev.mod * (Math.abs(tpP) / 100), loss: capital * lev.mod * (Math.abs(slP) / 100) };
+      const simR = { pos: capital * lev.risky, gain: capital * lev.risky * (Math.abs(tpP) / 100), loss: capital * lev.risky * (Math.abs(slP) / 100) };
+      document.getElementById('levSafe').textContent = '×' + lev.safe;
+      document.getElementById('levMod').textContent = '×' + lev.mod;
+      document.getElementById('levRisk').textContent = '×' + lev.risky;
+      document.getElementById('levSafeEur').textContent = '+' + simS.gain.toFixed(2) + '€';
+      document.getElementById('levModEur').textContent = '+' + simM.gain.toFixed(2) + '€';
+      document.getElementById('levRiskEur').textContent = '+' + simR.gain.toFixed(2) + '€';
+      document.getElementById('levNote').textContent = 'SL ≈ ' + lev.slPct + '% · ' + capital + '€ capital · Prudent = pos. ' + simS.pos.toFixed(0) + '€, perte max ' + simS.loss.toFixed(2) + '€ si SL';
+      document.getElementById('capPos').textContent = simM.pos.toFixed(0) + '€';
+      document.getElementById('capGain').textContent = '+' + simM.gain.toFixed(2) + '€';
+      document.getElementById('capLoss').textContent = '-' + simM.loss.toFixed(2) + '€';
+      document.getElementById('capNote').textContent = 'Levier modéré ×' + lev.mod + ' sur ' + capital + '€';
+      const t = new Date().toLocaleTimeString('fr-FR');
+      const lbl = isLong ? 'LONG' : 'SHORT';
+      logs.unshift({ t, p: pair.replace('USDT', ''), mode: mode === 'scalp' ? 'S' : 'SW', lbl, cls: isLong ? 'l' : 's', price: fmt(price), conf });
+      if (logs.length > 20) logs.pop();
+      document.getElementById('logList').innerHTML = logs.map(l => '<div class="log-item ' + l.cls + '">' + l.t + ' [' + l.mode + '] ' + l.p + ' → ' + l.lbl + ' @ ' + l.price + ' (' + l.conf + '%)</div>').join('');
+    } else { lw.style.display = 'none'; }
 
-      document.getElementById('capPos').textContent=simM.pos.toFixed(0)+'€';
-      document.getElementById('capGain').textContent='+'+simM.gain.toFixed(2)+'€';
-      document.getElementById('capLoss').textContent='-'+simM.loss.toFixed(2)+'€';
-      document.getElementById('capNote').textContent='Simulation levier modéré ×'+lev.mod+' · Capital : '+capital+'€';
+    // ── CONFIANCE ──
+    const cc = conf >= 70 ? 'var(--green)' : conf >= 45 ? 'var(--amber)' : 'var(--red)';
+    document.getElementById('confPct').textContent = conf + '%';
+    document.getElementById('confPct').style.color = cc;
+    document.getElementById('confFill').style.width = conf + '%';
+    document.getElementById('confFill').style.background = cc;
+    document.getElementById('confTitle').textContent = 'INDICATEURS · ' + cfg.entry.toUpperCase();
+    const inds = getIndDetails(dEntry.closes, dEntry.highs, dEntry.lows, dEntry.vols);
+    document.getElementById('indRows').innerHTML = inds.map(d =>
+      '<div class="ind-row"><span class="ind-name">' + d.n + '</span><span class="ind-right"><span class="ind-val ' + (d.s === 'bull' ? 'bull' : d.s === 'bear' ? 'bear' : 'neu') + '">' + d.v + '</span><span class="ind-sig ' + (d.s === 'bull' ? 'sig-bull' : d.s === 'bear' ? 'sig-bear' : 'sig-neu') + '">' + d.t + '</span></span></div>'
+    ).join('');
 
-      const t=new Date().toLocaleTimeString('fr-FR');
-      const lbl=isLong?'LONG':'SHORT';
-      logs.unshift({t,p:pair.replace('USDT',''),tf,lbl,cls:isLong?'l':'s',price:fmt(price),conf});
-      if(logs.length>20)logs.pop();
-      document.getElementById('logList').innerHTML=logs.map(l=>'<div class="log-item '+l.cls+'">'+l.t+' · '+l.p+' '+l.tf+' → '+l.lbl+' @ '+l.price+' ('+l.conf+'%)</div>').join('');
-    }else{
-      lw.style.display='none';
-    }
-
-    // Confiance
-    const cc=conf>=70?'var(--green)':conf>=45?'var(--amber)':'var(--red)';
-    document.getElementById('confPct').textContent=conf+'%';
-    document.getElementById('confPct').style.color=cc;
-    document.getElementById('confFill').style.width=conf+'%';
-    document.getElementById('confFill').style.background=cc;
-    document.getElementById('indRows').innerHTML=inds.map(d=>'<div class="ind-row"><span class="ind-name">'+d.n+'</span><span class="ind-right"><span class="ind-val '+(d.s==='bull'?'bull':d.s==='bear'?'bear':'neu')+'">'+d.v+'</span><span class="ind-sig '+(d.s==='bull'?'sig-bull':d.s==='bear'?'sig-bear':'sig-neu')+'">'+d.t+'</span></span></div>').join('');
-
-  }catch(err){
-    sigCard.className='signal-card wait';
-    document.getElementById('sigArrow').textContent='!';
-    document.getElementById('sigWord').textContent='ERREUR';
-    document.getElementById('sigSub').textContent=err.message;
+  } catch (err) {
+    sigCard.className = 'signal-card wait';
+    document.getElementById('sigArrow').textContent = '!';
+    document.getElementById('sigWord').textContent = 'ERREUR';
+    document.getElementById('sigSub').textContent = err.message;
+    console.error(err);
   }
 }
 
-function unlock(){
-  locked=false;
-  document.getElementById('lockBadge').style.display='none';
-  document.getElementById('unlockWrap').style.display='none';
+function unlock() {
+  locked = false;
+  document.getElementById('lockBadge').style.display = 'none';
+  document.getElementById('unlockWrap').style.display = 'none';
   analyze();
 }
-function manualAnalyze(){
-  locked=false;
-  document.getElementById('lockBadge').style.display='none';
-  document.getElementById('unlockWrap').style.display='none';
-  analyze();startTimer();
+function manualAnalyze() {
+  locked = false;
+  document.getElementById('lockBadge').style.display = 'none';
+  document.getElementById('unlockWrap').style.display = 'none';
+  analyze(); startTimer();
 }
-function startTimer(){
-  clearInterval(timer);cdVal=CD_MAX;
-  document.getElementById('cdFill').style.width='100%';
-  timer=setInterval(()=>{
+function startTimer() {
+  clearInterval(timer); cdVal = CD_MAX;
+  document.getElementById('cdFill').style.width = '100%';
+  timer = setInterval(() => {
     cdVal--;
-    document.getElementById('cdNum').textContent=cdVal;
-    document.getElementById('cdFill').style.width=(cdVal/CD_MAX*100)+'%';
-    if(cdVal<=0){analyze();cdVal=CD_MAX;}
-  },1000);
+    document.getElementById('cdNum').textContent = cdVal;
+    document.getElementById('cdFill').style.width = (cdVal / CD_MAX * 100) + '%';
+    if (cdVal <= 0) { analyze(); cdVal = CD_MAX; }
+  }, 1000);
 }
-document.getElementById('pair').onchange=manualAnalyze;
-document.getElementById('tf').onchange=manualAnalyze;
-document.getElementById('risk').onchange=()=>{if(!locked)analyze();};
-document.getElementById('capital').oninput=()=>{if(!locked)analyze();};
-document.getElementById('source').onchange=manualAnalyze;
-analyze();startTimer();
+document.getElementById('pair').onchange = manualAnalyze;
+document.getElementById('risk').onchange = () => { if (!locked) analyze(); };
+document.getElementById('capital').oninput = () => { if (!locked) analyze(); };
+document.getElementById('source').onchange = manualAnalyze;
+analyze(); startTimer();
 </script>
 </body>
 </html>
