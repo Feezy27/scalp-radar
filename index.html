@@ -12,12 +12,14 @@
   --muted:#5a6175;--muted2:#3a4155;
   --green:#00e676;--green-dim:#00e67618;
   --red:#ff4444;--red-dim:#ff444418;
-  --amber:#ffb300;--amber-dim:#ffb30022;--blue:#4fc3f7;
+  --amber:#ffb300;--amber-dim:#ffb30022;
+  --blue:#4fc3f7;--blue-dim:#4fc3f718;
   --purple:#b388ff;--purple-dim:#b388ff18;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;}
 body{min-height:100vh;display:flex;flex-direction:column;}
+
 header{padding:.9rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:10;}
 .logo{font-size:1.05rem;font-weight:800;letter-spacing:.04em;}
 .logo span{color:var(--green);}
@@ -25,41 +27,66 @@ header{padding:.9rem 1.25rem;border-bottom:1px solid var(--border);display:flex;
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 .hright{display:flex;align-items:center;gap:14px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);}
 
-.controls{padding:1rem 1.25rem;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid var(--border);}
-select,input[type=number]{background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
-input[type=number]{width:105px;-moz-appearance:textfield;}
+.mode-bar{display:flex;border-bottom:1px solid var(--border);}
+.mode-tab{flex:1;padding:.65rem;text-align:center;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);transition:all .2s;letter-spacing:.03em;}
+.mode-tab.active{color:var(--text);border-bottom-color:var(--green);}
+
+/* NAV PAGES */
+.page-nav{display:flex;border-bottom:1px solid var(--border);}
+.page-tab{flex:1;padding:.55rem;text-align:center;font-size:11px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;letter-spacing:.04em;font-family:'IBM Plex Mono',monospace;}
+.page-tab.active{color:var(--green);}
+.page{display:none;}.page.active{display:flex;flex-direction:column;}
+
+.controls{padding:.85rem 1.25rem;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid var(--border);}
+select,input[type=number]{background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;font-family:'IBM Plex Mono',monospace;font-size:13px;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;}
+input[type=number]{width:95px;-moz-appearance:textfield;}
 input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
-.btn{background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:7px 18px;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn{background:transparent;color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:7px 16px;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
 .btn:hover{border-color:var(--green);color:var(--green);}
 .btn:active{transform:scale(.97);}
-.btn-unlock{background:var(--amber-dim);color:var(--amber);border-color:var(--amber);}
-.btn-unlock:hover{background:var(--amber);color:#000;border-color:var(--amber);}
 .cd-wrap{margin-left:auto;display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);}
-.cd-bar{width:70px;height:3px;background:var(--border2);border-radius:2px;overflow:hidden;}
+.cd-bar{width:60px;height:3px;background:var(--border2);border-radius:2px;overflow:hidden;}
 .cd-fill{height:100%;background:var(--green);border-radius:2px;transition:width 1s linear;}
-
-/* MODE TABS */
-.mode-bar{display:flex;gap:0;border-bottom:1px solid var(--border);}
-.mode-tab{flex:1;padding:.7rem;text-align:center;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);transition:all .2s;letter-spacing:.03em;}
-.mode-tab.active{color:var(--text);border-bottom-color:var(--green);}
-.mode-tab:hover{color:var(--text);}
 
 main{flex:1;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:10px;}
 
 /* SIGNAL */
-.signal-card{border-radius:12px;padding:1.5rem;text-align:center;border:1px solid var(--border);background:var(--surface);transition:all .4s;position:relative;}
+.signal-card{border-radius:12px;padding:1.5rem;text-align:center;border:1px solid var(--border);background:var(--surface);transition:all .4s;}
 .signal-card.long{border-color:var(--green);background:var(--green-dim);}
 .signal-card.short{border-color:var(--red);background:var(--red-dim);}
 .signal-lbl{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.15em;color:var(--muted);margin-bottom:.8rem;}
-.signal-arrow{font-size:46px;line-height:1;margin-bottom:.35rem;transition:color .4s;}
-.signal-word{font-size:28px;font-weight:800;letter-spacing:.04em;transition:color .4s;}
-.signal-sub{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:.5rem;}
+.signal-arrow{font-size:44px;line-height:1;margin-bottom:.3rem;transition:color .4s;}
+.signal-word{font-size:27px;font-weight:800;letter-spacing:.04em;transition:color .4s;}
+.signal-sub{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:.5rem;}
 .long .signal-arrow,.long .signal-word{color:var(--green);}
 .short .signal-arrow,.short .signal-word{color:var(--red);}
 .wait .signal-arrow,.wait .signal-word{color:var(--muted);}
-.lock-badge{display:inline-flex;align-items:center;gap:5px;margin-top:.7rem;background:rgba(255,179,0,.15);color:var(--amber);border:1px solid rgba(255,179,0,.4);border-radius:20px;padding:4px 14px;font-size:11px;font-family:'IBM Plex Mono',monospace;}
+.lock-badge{display:inline-flex;align-items:center;gap:5px;margin-top:.65rem;background:rgba(255,179,0,.15);color:var(--amber);border:1px solid rgba(255,179,0,.4);border-radius:20px;padding:3px 12px;font-size:11px;font-family:'IBM Plex Mono',monospace;}
 
-/* MTF PANEL */
+/* BOUTON TAKE TRADE */
+.take-trade-btn{width:100%;padding:.9rem;border-radius:10px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:all .25s;border:2px solid;}
+.take-trade-btn.long-btn{background:var(--green-dim);border-color:var(--green);color:var(--green);}
+.take-trade-btn.long-btn:hover{background:var(--green);color:#000;}
+.take-trade-btn.short-btn{background:var(--red-dim);border-color:var(--red);color:var(--red);}
+.take-trade-btn.short-btn:hover{background:var(--red);color:#fff;}
+.take-trade-btn:active{transform:scale(.98);}
+
+/* TRADE EN COURS */
+.active-trade-card{border-radius:12px;border:2px solid var(--amber);background:var(--amber-dim);padding:1rem 1.25rem;}
+.at-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.at-title{font-size:11px;font-family:'IBM Plex Mono',monospace;letter-spacing:.1em;color:var(--amber);}
+.at-badge{font-size:11px;background:var(--amber);color:#000;border-radius:4px;padding:2px 8px;font-family:'IBM Plex Mono',monospace;font-weight:600;}
+.at-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.at-item{text-align:center;}
+.at-item-lbl{font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:3px;}
+.at-item-val{font-size:14px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+.at-pnl-live{text-align:center;padding:.6rem;background:var(--surface);border-radius:8px;margin-bottom:12px;font-family:'IBM Plex Mono',monospace;}
+.at-pnl-lbl{font-size:10px;color:var(--muted);margin-bottom:3px;}
+.at-pnl-val{font-size:20px;font-weight:600;}
+.close-btn{width:100%;padding:.75rem;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;border:1px solid var(--border2);background:var(--surface);color:var(--text);}
+.close-btn:hover{border-color:var(--amber);color:var(--amber);}
+
+/* MTF */
 .mtf-panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.25rem;}
 .mtf-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);margin-bottom:10px;}
 .mtf-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
@@ -67,8 +94,7 @@ main{flex:1;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:10px;}
 .mtf-tf{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);min-width:32px;}
 .mtf-bar-wrap{height:5px;background:var(--border2);border-radius:3px;overflow:hidden;}
 .mtf-bar{height:100%;border-radius:3px;transition:width .6s,background .6s;}
-.mtf-label{font-size:11px;font-family:'IBM Plex Mono',monospace;min-width:90px;text-align:right;}
-.mtf-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-family:'IBM Plex Mono',monospace;white-space:nowrap;}
+.mtf-badge{font-size:10px;padding:2px 7px;border-radius:4px;font-family:'IBM Plex Mono',monospace;}
 .badge-bull{background:var(--green-dim);color:var(--green);}
 .badge-bear{background:var(--red-dim);color:var(--red);}
 .badge-neu{background:var(--border2);color:var(--muted);}
@@ -88,16 +114,12 @@ main{flex:1;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:10px;}
 .level-val{font-size:16px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
 .green{color:var(--green);}.red2{color:var(--red);}.amber2{color:var(--amber);}.blue2{color:var(--blue);}
 .level-sub{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:3px;}
-
-/* CAPITAL */
 .capital-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.25rem;grid-column:1/-1;}
 .cap-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);margin-bottom:10px;}
 .cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;}
 .cap-item{background:var(--surface2);border-radius:8px;padding:.6rem .4rem;}
 .cap-item-lbl{font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:4px;}
 .cap-item-val{font-size:15px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
-
-/* LEVIER */
 .lev-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.25rem;grid-column:1/-1;}
 .lev-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .lev-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);}
@@ -133,22 +155,110 @@ main{flex:1;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:10px;}
 .sig-bear{background:var(--red-dim);color:var(--red);}
 .sig-neu{background:var(--border2);color:var(--muted);}
 
-/* DURÉE ESTIMÉE */
+/* DURÉE */
 .duration-card{background:var(--surface);border:1px solid var(--purple);border-radius:10px;padding:.9rem 1.25rem;display:flex;justify-content:space-between;align-items:center;}
-.dur-left{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);}
 .dur-val{font-size:15px;font-weight:600;color:var(--purple);font-family:'IBM Plex Mono',monospace;}
+.dur-lbl{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);}
 .dur-sub{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:3px;}
 
-/* LOG */
-.log-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.25rem;}
-.log-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);margin-bottom:8px;}
-.log-list{display:flex;flex-direction:column;gap:4px;max-height:110px;overflow-y:auto;}
-.log-item{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);}
-.log-item.l{color:var(--green);}.log-item.s{color:var(--red);}
+/* ── STATS PAGE ── */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.25rem;text-align:center;}
+.stat-lbl{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.1em;color:var(--muted);margin-bottom:6px;}
+.stat-val{font-size:22px;font-weight:800;}
+.stat-sub{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:3px;}
+.stat-card.full{grid-column:1/-1;}
 
-footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted2);text-align:center;line-height:1.6;}
+/* BARRE WINRATE */
+.wr-bar-wrap{height:10px;background:var(--border2);border-radius:5px;overflow:hidden;margin:8px 0 4px;}
+.wr-bar-win{height:100%;background:var(--green);border-radius:5px 0 0 5px;transition:width .8s;}
 
-/* MODE SCALP = timeframe court visible, MODE SWING = timeframe long visible */
+/* JOURNAL */
+.journal-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.25rem;}
+.journal-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+.clear-btn{font-size:10px;color:var(--muted);background:transparent;border:1px solid var(--border2);border-radius:4px;padding:2px 8px;cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+.clear-btn:hover{color:var(--red);border-color:var(--red);}
+.trade-item{padding:10px 0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;}
+.trade-item:last-child{border-bottom:none;}
+.trade-dir{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;}
+.trade-dir.win-long{background:var(--green-dim);color:var(--green);}
+.trade-dir.win-short{background:var(--green-dim);color:var(--green);}
+.trade-dir.loss-long{background:var(--red-dim);color:var(--red);}
+.trade-dir.loss-short{background:var(--red-dim);color:var(--red);}
+.trade-info{min-width:0;}
+.trade-meta{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.trade-detail{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--text);}
+.trade-result{text-align:right;flex-shrink:0;}
+.trade-pnl{font-size:15px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.trade-outcome{font-size:10px;font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+.win-txt{color:var(--green);}.loss-txt{color:var(--red);}
+
+.empty-state{text-align:center;padding:2rem 1rem;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--muted);}
+
+/* ── MODE DÉBUTANT / PRO ── */
+.ui-switch{display:flex;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;overflow:hidden;cursor:pointer;}
+.ui-switch-opt{padding:4px 12px;font-size:11px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--muted);transition:all .2s;border-radius:20px;letter-spacing:.04em;}
+.ui-switch-opt.active{background:var(--green);color:#000;}
+/* Éléments cachés en mode débutant */
+body.beginner .pro-only{display:none!important;}
+
+/* CARTE DÉBUTANT — TP / SL simple */
+.beginner-levels{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:0;}
+.beg-card{border-radius:14px;padding:1.25rem;text-align:center;border:1px solid var(--border);}
+.beg-card.tp{border-color:var(--green);background:var(--green-dim);}
+.beg-card.sl{border-color:var(--red);background:var(--red-dim);}
+.beg-card-lbl{font-size:11px;font-family:'IBM Plex Mono',monospace;letter-spacing:.1em;margin-bottom:6px;}
+.beg-card.tp .beg-card-lbl{color:var(--green);}
+.beg-card.sl .beg-card-lbl{color:var(--red);}
+.beg-card-val{font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.beg-card.tp .beg-card-val{color:var(--green);}
+.beg-card.sl .beg-card-val{color:var(--red);}
+.beg-card-sub{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:4px;}
+.beg-expl{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.25rem;font-size:13px;line-height:1.7;color:var(--muted);}
+.beg-expl strong{color:var(--text);font-weight:600;}
+.beg-only{display:none;}
+body.beginner .beg-only{display:block;}
+body.beginner .beg-only-flex{display:flex;}
+.beg-only-flex{display:none;}
+.alert-toggle-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;}
+.alert-toggle-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.alert-toggle-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);}
+.toggle-wrap{display:flex;align-items:center;gap:10px;}
+.toggle-lbl{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--muted);}
+.toggle{position:relative;width:44px;height:24px;cursor:pointer;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-slider{position:absolute;inset:0;background:var(--border2);border-radius:12px;transition:.3s;}
+.toggle-slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:var(--muted);border-radius:50%;transition:.3s;}
+.toggle input:checked + .toggle-slider{background:var(--green-dim);border:1px solid var(--green);}
+.toggle input:checked + .toggle-slider:before{transform:translateX(20px);background:var(--green);}
+.notif-status{font-size:12px;font-family:'IBM Plex Mono',monospace;padding:8px 12px;border-radius:8px;margin-bottom:12px;}
+.notif-status.ok{background:var(--green-dim);color:var(--green);border:1px solid var(--green);}
+.notif-status.warn{background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber);}
+.notif-status.off{background:var(--border);color:var(--muted);}
+.enable-notif-btn{width:100%;padding:.75rem;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;border:1px solid var(--green);background:var(--green-dim);color:var(--green);}
+.enable-notif-btn:hover{background:var(--green);color:#000;}
+.enable-notif-btn:disabled{opacity:.4;cursor:not-allowed;}
+.alert-pairs-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;}
+.alert-pairs-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);margin-bottom:12px;}
+.pair-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.pair-row:last-child{border-bottom:none;}
+.pair-name{font-size:13px;font-family:'IBM Plex Mono',monospace;font-weight:500;}
+.pair-status{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);}
+.pair-status.scanning{color:var(--blue);}
+.pair-status.alert-long{color:var(--green);}
+.pair-status.alert-short{color:var(--red);}
+.scan-progress{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;}
+.scan-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between;}
+.scan-bar-wrap{height:4px;background:var(--border2);border-radius:2px;overflow:hidden;}
+.scan-bar-fill{height:100%;background:var(--blue);border-radius:2px;transition:width .4s;}
+.alert-history-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;}
+.alert-history-title{font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted);margin-bottom:10px;}
+.alert-item{padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.alert-item:last-child{border-bottom:none;}
+.alert-item-left{font-size:12px;font-family:'IBM Plex Mono',monospace;}
+.alert-item-right{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);}
+
+footer{padding:.65rem 1.25rem;border-top:1px solid var(--border);font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted2);text-align:center;line-height:1.6;}
 </style>
 </head>
 <body>
@@ -156,502 +266,788 @@ footer{padding:.75rem 1.25rem;border-top:1px solid var(--border);font-size:11px;
 <header>
   <div class="logo">Scalp<span>Radar</span></div>
   <div class="hright">
+    <div class="ui-switch" onclick="toggleUiMode()" title="Changer de mode">
+      <div class="ui-switch-opt active" id="uiOptBeg">DÉBUTANT</div>
+      <div class="ui-switch-opt" id="uiOptPro">PRO</div>
+    </div>
     <span style="display:flex;align-items:center;"><span class="live-dot"></span>LIVE</span>
     <span id="clock">--:--:--</span>
   </div>
 </header>
 
-<!-- ONGLETS MODE -->
 <div class="mode-bar">
-  <div class="mode-tab active" id="tabScalp" onclick="setMode('scalp')">⚡ SCALP (minutes)</div>
-  <div class="mode-tab" id="tabSwing" onclick="setMode('swing')">📈 SWING (heures)</div>
+  <div class="mode-tab active" id="tabScalp" onclick="setMode('scalp')">⚡ SCALP</div>
+  <div class="mode-tab" id="tabSwing" onclick="setMode('swing')">📈 SWING</div>
 </div>
 
-<div class="controls">
-  <select id="source">
-    <option value="binance">Binance</option>
-    <option value="bingx">BingX</option>
-  </select>
-  <select id="pair">
-    <option value="BTCUSDT">BTC/USDT</option>
-    <option value="ETHUSDT">ETH/USDT</option>
-    <option value="SOLUSDT">SOL/USDT</option>
-    <option value="BNBUSDT">BNB/USDT</option>
-    <option value="XRPUSDT">XRP/USDT</option>
-    <option value="DOGEUSDT">DOGE/USDT</option>
-    <option value="ADAUSDT">ADA/USDT</option>
-    <option value="AVAXUSDT">AVAX/USDT</option>
-    <option value="HYPEUSDT">HYPE/USDT</option>
-  </select>
-  <select id="risk">
-    <option value="1">Risque 1%</option>
-    <option value="2" selected>Risque 2%</option>
-    <option value="3">Risque 3%</option>
-    <option value="5">Risque 5%</option>
-  </select>
-  <input type="number" id="capital" value="30" min="1" placeholder="Capital €">
-  <button class="btn" onclick="manualAnalyze()">↻ Analyser</button>
-  <div class="cd-wrap">
-    <span>actu. <span id="cdNum">30</span>s</span>
-    <div class="cd-bar"><div class="cd-fill" id="cdFill" style="width:100%"></div></div>
-  </div>
+<div class="page-nav">
+  <div class="page-tab active" id="ptAnalyse" onclick="showPage('analyse')">ANALYSE</div>
+  <div class="page-tab" id="ptStats" onclick="showPage('stats')">STATS</div>
+  <div class="page-tab" id="ptJournal" onclick="showPage('journal')">JOURNAL</div>
+  <div class="page-tab" id="ptAlertes" onclick="showPage('alertes')">🔔 ALERTES</div>
 </div>
 
-<main>
+<!-- PAGE ANALYSE -->
+<div class="page active" id="pageAnalyse">
 
-  <!-- SIGNAL PRINCIPAL -->
-  <div class="signal-card wait" id="sigCard">
-    <div class="signal-lbl" id="sigLbl">SIGNAL SCALP FUTURES</div>
-    <div class="signal-arrow" id="sigArrow">·</div>
-    <div class="signal-word" id="sigWord">Connexion...</div>
-    <div class="signal-sub" id="sigSub">Récupération des données...</div>
-    <div id="lockBadge" style="display:none;" class="lock-badge">⚠ Signal verrouillé — saisis ton trade puis clique "Nouveau signal"</div>
-  </div>
-
-  <div style="display:none;text-align:center;" id="unlockWrap">
-    <button class="btn btn-unlock" onclick="unlock()">✓ Nouveau signal</button>
-  </div>
-
-  <!-- ANALYSE MULTI-TIMEFRAME -->
-  <div class="mtf-panel">
-    <div class="mtf-title">ANALYSE MULTI-TIMEFRAME</div>
-    <div id="mtfRows"><div class="ind-row"><span class="ind-name" style="font-size:12px;">En attente...</span></div></div>
-    <div style="margin-top:10px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);line-height:1.6;" id="mtfConclusion"></div>
-  </div>
-
-  <!-- PRIX -->
-  <div class="price-bar">
-    <div>
-      <div class="price-pair" id="pricePair">— / USDT</div>
-      <div class="price-main" id="priceVal">—</div>
-    </div>
-    <div style="text-align:right;">
-      <div class="price-chg" id="priceChg">—</div>
-      <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:3px;" id="priceSource">—</div>
+  <div class="controls">
+    <select id="source"><option value="binance">Binance</option><option value="bingx">BingX</option></select>
+    <select id="pair">
+      <option value="BTCUSDT">BTC/USDT</option>
+      <option value="ETHUSDT">ETH/USDT</option>
+      <option value="SOLUSDT">SOL/USDT</option>
+      <option value="BNBUSDT">BNB/USDT</option>
+      <option value="XRPUSDT">XRP/USDT</option>
+      <option value="DOGEUSDT">DOGE/USDT</option>
+      <option value="ADAUSDT">ADA/USDT</option>
+      <option value="AVAXUSDT">AVAX/USDT</option>
+      <option value="HYPEUSDT">HYPE/USDT ⚠ BingX uniquement</option>
+    </select>
+    <select id="risk"><option value="1">Risque 1%</option><option value="2" selected>Risque 2%</option><option value="3">Risque 3%</option><option value="5">Risque 5%</option></select>
+    <input type="number" id="capital" value="30" min="1" placeholder="Capital €">
+    <button class="btn" onclick="manualAnalyze()">↻</button>
+    <div class="cd-wrap">
+      <span><span id="cdNum">30</span>s</span>
+      <div class="cd-bar"><div class="cd-fill" id="cdFill" style="width:100%"></div></div>
     </div>
   </div>
 
-  <!-- DURÉE ESTIMÉE -->
-  <div class="duration-card" id="durationCard" style="display:none;">
-    <div>
-      <div class="dur-left">DURÉE ESTIMÉE DU TRADE</div>
-      <div class="dur-val" id="durVal">—</div>
-    </div>
-    <div style="text-align:right;">
-      <div class="dur-sub" id="durSub">—</div>
-    </div>
-  </div>
+  <main>
 
-  <!-- NIVEAUX TP / SL -->
-  <div class="levels-grid" id="levelsWrap" style="display:none;">
-    <div class="level-card">
-      <div class="level-lbl">TAKE PROFIT</div>
-      <div class="level-val green" id="lvTP">—</div>
-      <div class="level-sub" id="lvTPpct">—</div>
-    </div>
-    <div class="level-card">
-      <div class="level-lbl">STOP LOSS</div>
-      <div class="level-val red2" id="lvSL">—</div>
-      <div class="level-sub" id="lvSLpct">—</div>
-    </div>
-    <div class="level-card">
-      <div class="level-lbl">RATIO R/R</div>
-      <div class="level-val amber2" id="lvRR">—</div>
-      <div class="level-sub">risque / récompense</div>
-    </div>
-    <div class="level-card">
-      <div class="level-lbl">VOLATILITÉ (ATR)</div>
-      <div class="level-val blue2" id="lvATR">—</div>
-      <div class="level-sub">mouvement moyen / bougie</div>
-    </div>
-
-    <div class="capital-card">
-      <div class="cap-title">SIMULATION AVEC TON CAPITAL</div>
-      <div class="cap-grid">
-        <div class="cap-item">
-          <div class="cap-item-lbl">POSITION</div>
-          <div class="cap-item-val blue2" id="capPos">—</div>
+    <!-- TRADE EN COURS -->
+    <div id="activeTradeWrap" style="display:none;">
+      <div class="active-trade-card">
+        <div class="at-header">
+          <span class="at-title">TRADE EN COURS</span>
+          <span class="at-badge" id="atBadge">LONG</span>
         </div>
-        <div class="cap-item">
-          <div class="cap-item-lbl">GAIN SI TP</div>
-          <div class="cap-item-val green" id="capGain">—</div>
+        <div class="at-grid">
+          <div class="at-item"><div class="at-item-lbl">ENTRÉE</div><div class="at-item-val" id="atEntry">—</div></div>
+          <div class="at-item"><div class="at-item-lbl">TP</div><div class="at-item-val green" id="atTP">—</div></div>
+          <div class="at-item"><div class="at-item-lbl">SL</div><div class="at-item-val red2" id="atSL">—</div></div>
         </div>
-        <div class="cap-item">
-          <div class="cap-item-lbl">PERTE SI SL</div>
-          <div class="cap-item-val red2" id="capLoss">—</div>
+        <div class="at-grid" style="margin-bottom:12px;">
+          <div class="at-item"><div class="at-item-lbl">LEVIER</div><div class="at-item-val amber2" id="atLev">—</div></div>
+          <div class="at-item"><div class="at-item-lbl">POSITION</div><div class="at-item-val blue2" id="atPos">—</div></div>
+          <div class="at-item"><div class="at-item-lbl">DURÉE</div><div class="at-item-val" id="atDur" style="color:var(--muted);font-size:12px;">—</div></div>
+        </div>
+        <div class="at-pnl-live">
+          <div class="at-pnl-lbl">P&L EN TEMPS RÉEL</div>
+          <div class="at-pnl-val" id="atPnlLive">—</div>
+        </div>
+        <button class="close-btn" onclick="closeTrade()">Clôturer ce trade au prix actuel</button>
+      </div>
+    </div>
+
+    <!-- SIGNAL -->
+    <div class="signal-card wait" id="sigCard">
+      <div class="signal-lbl" id="sigLbl">SIGNAL SCALP FUTURES</div>
+      <div class="signal-arrow" id="sigArrow">·</div>
+      <div class="signal-word" id="sigWord">Connexion...</div>
+      <div class="signal-sub" id="sigSub">Récupération des données...</div>
+      <div id="lockBadge" style="display:none;" class="lock-badge">⚠ Signal verrouillé</div>
+    </div>
+
+    <!-- BOUTON PRENDRE LE TRADE -->
+    <div id="takeBtnWrap" style="display:none;">
+      <button class="take-trade-btn" id="takeBtn" onclick="takeTrade()">→ Je prends ce trade</button>
+    </div>
+
+    <!-- BOUTON NOUVEAU SIGNAL -->
+    <div style="display:none;text-align:center;" id="unlockWrap">
+      <button class="btn" style="font-size:12px;color:var(--muted);" onclick="unlock()">✕ Ignorer — Nouveau signal</button>
+    </div>
+
+    <!-- MTF -->
+    <div class="mtf-panel pro-only">
+      <div class="mtf-title">ANALYSE MULTI-TIMEFRAME</div>
+      <div id="mtfRows"><div class="ind-row"><span class="ind-name" style="font-size:12px;">En attente...</span></div></div>
+      <div style="margin-top:10px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);line-height:1.6;" id="mtfConclusion"></div>
+    </div>
+
+    <!-- PRIX -->
+    <div class="price-bar">
+      <div>
+        <div class="price-pair" id="pricePair">— / USDT</div>
+        <div class="price-main" id="priceVal">—</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="price-chg" id="priceChg">—</div>
+        <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:3px;" id="priceSource">—</div>
+      </div>
+    </div>
+
+    <!-- DURÉE -->
+    <div class="duration-card pro-only" id="durationCard" style="display:none;">
+      <div><div class="dur-lbl">DURÉE ESTIMÉE</div><div class="dur-val" id="durVal">—</div></div>
+      <div style="text-align:right;"><div class="dur-sub" id="durSub">—</div></div>
+    </div>
+
+    <!-- NIVEAUX PRO -->
+    <div class="levels-grid pro-only" id="levelsWrap" style="display:none;">
+      <div class="level-card"><div class="level-lbl">TAKE PROFIT</div><div class="level-val green" id="lvTP">—</div><div class="level-sub" id="lvTPpct">—</div></div>
+      <div class="level-card"><div class="level-lbl">STOP LOSS</div><div class="level-val red2" id="lvSL">—</div><div class="level-sub" id="lvSLpct">—</div></div>
+      <div class="level-card"><div class="level-lbl">RATIO R/R</div><div class="level-val amber2" id="lvRR">—</div><div class="level-sub">risque / récompense</div></div>
+      <div class="level-card"><div class="level-lbl">VOLATILITÉ (ATR)</div><div class="level-val blue2" id="lvATR">—</div><div class="level-sub">mouvement moyen</div></div>
+      <div class="capital-card">
+        <div class="cap-title">SIMULATION CAPITAL</div>
+        <div class="cap-grid">
+          <div class="cap-item"><div class="cap-item-lbl">POSITION</div><div class="cap-item-val blue2" id="capPos">—</div></div>
+          <div class="cap-item"><div class="cap-item-lbl">GAIN SI TP</div><div class="cap-item-val green" id="capGain">—</div></div>
+          <div class="cap-item"><div class="cap-item-lbl">PERTE SI SL</div><div class="cap-item-val red2" id="capLoss">—</div></div>
+        </div>
+        <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:8px;text-align:center;" id="capNote">—</div>
+      </div>
+      <div class="lev-card">
+        <div class="lev-header"><div class="lev-title">LEVIER SUGGÉRÉ</div><div class="lev-warn">⚠ Futures uniquement</div></div>
+        <div class="lev-options">
+          <div class="lev-opt safe"><div class="lev-x" id="levSafe">×—</div><div class="lev-desc">Prudent</div><div class="lev-eur green" id="levSafeEur">—</div></div>
+          <div class="lev-opt mod"><div class="lev-x" id="levMod">×—</div><div class="lev-desc">Modéré</div><div class="lev-eur amber2" id="levModEur">—</div></div>
+          <div class="lev-opt risk"><div class="lev-x" id="levRisk">×—</div><div class="lev-desc">Agressif</div><div class="lev-eur red2" id="levRiskEur">—</div></div>
+        </div>
+        <div class="lev-note" id="levNote">—</div>
+      </div>
+    </div>
+
+    <!-- NIVEAUX DÉBUTANT -->
+    <div class="beg-only" id="begLevelsWrap" style="display:none;">
+      <div class="beginner-levels">
+        <div class="beg-card tp">
+          <div class="beg-card-lbl">TAKE PROFIT</div>
+          <div class="beg-card-val" id="begTP">—</div>
+          <div class="beg-card-sub" id="begTPpct">Objectif de gain</div>
+        </div>
+        <div class="beg-card sl">
+          <div class="beg-card-lbl">STOP LOSS</div>
+          <div class="beg-card-val" id="begSL">—</div>
+          <div class="beg-card-sub" id="begSLpct">Limite de perte</div>
         </div>
       </div>
-      <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:8px;text-align:center;" id="capNote">—</div>
+
     </div>
 
-    <div class="lev-card">
-      <div class="lev-header">
-        <div class="lev-title">LEVIER SUGGÉRÉ</div>
-        <div class="lev-warn">⚠ Futures uniquement</div>
+    <!-- INDICATEURS (pro only) -->
+    <div class="conf-card pro-only">
+      <div class="conf-header">
+        <div class="conf-title" id="confTitle">INDICATEURS</div>
+        <div class="conf-pct" id="confPct">—</div>
       </div>
-      <div class="lev-options">
-        <div class="lev-opt safe"><div class="lev-x" id="levSafe">×—</div><div class="lev-desc">Prudent</div><div class="lev-eur green" id="levSafeEur">—</div></div>
-        <div class="lev-opt mod"><div class="lev-x" id="levMod">×—</div><div class="lev-desc">Modéré</div><div class="lev-eur amber2" id="levModEur">—</div></div>
-        <div class="lev-opt risk"><div class="lev-x" id="levRisk">×—</div><div class="lev-desc">Agressif</div><div class="lev-eur red2" id="levRiskEur">—</div></div>
+      <div class="conf-bar"><div class="conf-fill" id="confFill" style="width:0%;background:var(--muted);"></div></div>
+      <div id="indRows"><div class="ind-row"><span class="ind-name">En attente...</span></div></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- PAGE STATISTIQUES -->
+<div class="page" id="pageStats">
+  <main>
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card full empty-state">Aucun trade clôturé pour l'instant.<br>Prends ton premier trade depuis l'onglet Analyse !</div>
+    </div>
+  </main>
+</div>
+
+<!-- PAGE JOURNAL -->
+<div class="page" id="pageJournal">
+  <main>
+    <div class="journal-card">
+      <div class="journal-title">
+        <span>TRADES CLÔTURÉS</span>
+        <button class="clear-btn" onclick="clearJournal()">Effacer tout</button>
       </div>
-      <div class="lev-note" id="levNote">—</div>
+      <div id="journalList"><div class="empty-state">Aucun trade enregistré.</div></div>
     </div>
-  </div>
+  </main>
+</div>
 
-  <!-- INDICATEURS TIMEFRAME ENTRÉE -->
-  <div class="conf-card">
-    <div class="conf-header">
-      <div class="conf-title" id="confTitle">CONFIANCE DU SIGNAL</div>
-      <div class="conf-pct" id="confPct">—</div>
+<!-- PAGE ALERTES -->
+<div class="page" id="pageAlertes">
+  <main>
+
+    <div class="alert-toggle-card">
+      <div class="alert-toggle-header">
+        <div class="alert-toggle-title">SCANNER D'ALERTES</div>
+      </div>
+      <div class="notif-status off" id="notifStatus">Notifications désactivées</div>
+      <button class="enable-notif-btn" id="enableNotifBtn" onclick="requestNotifPermission()">Activer les notifications navigateur</button>
+
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:.75rem 1rem;">
+          <div>
+            <div style="font-size:13px;font-weight:600;">⚡ Alertes SCALP</div>
+            <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:2px;">1h / 5min / 15min</div>
+          </div>
+          <div class="toggle-wrap">
+            <span class="toggle-lbl" id="toggleLblScalp">Off</span>
+            <label class="toggle">
+              <input type="checkbox" id="alertToggleScalp" onchange="toggleScanner()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:.75rem 1rem;">
+          <div>
+            <div style="font-size:13px;font-weight:600;">📈 Alertes SWING</div>
+            <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:2px;">4h / 1h / 15min</div>
+          </div>
+          <div class="toggle-wrap">
+            <span class="toggle-lbl" id="toggleLblSwing">Off</span>
+            <label class="toggle">
+              <input type="checkbox" id="alertToggleSwing" onchange="toggleScanner()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);line-height:1.7;">
+        Scan toutes les <strong style="color:var(--text);">3 min</strong> · Signal requis : <strong style="color:var(--green);">3/3 TF alignés + confiance ≥ 80%</strong><br>
+        <span style="color:var(--amber);">iPhone : ajoute le site à l'écran d'accueil pour recevoir les notifs.</span>
+      </div>
     </div>
-    <div class="conf-bar"><div class="conf-fill" id="confFill" style="width:0%;background:var(--muted);"></div></div>
-    <div id="indRows"><div class="ind-row"><span class="ind-name">En attente...</span></div></div>
-  </div>
 
-  <div class="log-card">
-    <div class="log-title">HISTORIQUE</div>
-    <div class="log-list" id="logList"><div class="log-item">— Aucun signal</div></div>
-  </div>
+    <div class="scan-progress" id="scanProgressCard" style="display:none;">
+      <div class="scan-title">
+        <span id="scanModeTxt">SCAN EN COURS</span>
+        <span id="scanProgressTxt">0 / 8 paires</span>
+      </div>
+      <div class="scan-bar-wrap"><div class="scan-bar-fill" id="scanBarFill" style="width:0%"></div></div>
+      <div style="margin-top:8px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);">Prochain scan dans <span id="scanCdTxt">—</span></div>
+    </div>
 
-</main>
+    <div class="alert-pairs-card">
+      <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:0;">
+        <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.1em;color:var(--muted);padding:0 0 8px 0;grid-column:1/-1;display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;">
+          <span></span>
+          <span style="text-align:center;color:var(--text);">⚡ SCALP</span>
+          <span style="text-align:center;color:var(--text);">📈 SWING</span>
+        </div>
+        <div class="pair-row" style="grid-column:1/-1;display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:center;">
+          <span class="pair-name">BTC</span>
+          <span class="pair-status" id="ps-scalp-BTCUSDT" style="text-align:center;">—</span>
+          <span class="pair-status" id="ps-swing-BTCUSDT" style="text-align:center;">—</span>
+        </div>
+        <div class="pair-row" style="grid-column:1/-1;display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:center;">
+          <span class="pair-name">ETH</span>
+          <span class="pair-status" id="ps-scalp-ETHUSDT" style="text-align:center;">—</span>
+          <span class="pair-status" id="ps-swing-ETHUSDT" style="text-align:center;">—</span>
+        </div>
+        <div class="pair-row" style="grid-column:1/-1;display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:center;">
+          <span class="pair-name">SOL</span>
+          <span class="pair-status" id="ps-scalp-SOLUSDT" style="text-align:center;">—</span>
+          <span class="pair-status" id="ps-swing-SOLUSDT" style="text-align:center;">—</span>
+        </div>
+        <div class="pair-row" style="grid-column:1/-1;display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:center;">
+          <span class="pair-name">BNB</span>
+          <span class="pair-status" id="ps-scalp-BNBUSDT" style="text-align:center;">—</span>
+          <span class="pair-status" id="ps-swing-BNBUSDT" style="text-align:center;">—</span>
+        </div>
+        <div class="pair-row" style="grid-column:1/-1;display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:center;">
+          <span class="pair-name">XRP</span>
+          <span class="pair-status" id="ps-scalp-XRPUSDT" style="text-align:center;">—</span>
+          <span class="pair-status" id="ps-swing-XRPUSDT" style="text-align:center;">—</span>
+        </div>
+        <div class="pair-row" style="grid-column:1/-1;display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:center;">
+          <span class="pair-name">DOGE</span>
+          <span class="pair-status" id="ps-scalp-DOGEUSDT" style="text-align:center;">—</span>
+          <span class="pair-status" id="ps-swing-DOGEUSDT" style="text-align:center;">—</span>
+        </div>
+        <div class="pair-row" style="grid-column:1/-1;display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:center;">
+          <span class="pair-name">ADA</span>
+          <span class="pair-status" id="ps-scalp-ADAUSDT" style="text-align:center;">—</span>
+          <span class="pair-status" id="ps-swing-ADAUSDT" style="text-align:center;">—</span>
+        </div>
+        <div class="pair-row" style="grid-column:1/-1;display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:center;">
+          <span class="pair-name">AVAX</span>
+          <span class="pair-status" id="ps-scalp-AVAXUSDT" style="text-align:center;">—</span>
+          <span class="pair-status" id="ps-swing-AVAXUSDT" style="text-align:center;">—</span>
+        </div>
+        <div class="pair-row" style="grid-column:1/-1;display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:center;">
+          <span class="pair-name" style="color:var(--muted);">HYPE</span>
+          <span class="pair-status" style="text-align:center;color:var(--muted2);">—</span>
+          <span class="pair-status" style="text-align:center;color:var(--muted2);">BingX</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert-history-card">
+      <div class="alert-history-title">HISTORIQUE DES ALERTES</div>
+      <div id="alertHistoryList"><div class="empty-state" style="padding:1rem 0;">Aucune alerte déclenchée.</div></div>
+    </div>
+
+  </main>
+</div>
 
 <footer>
-  ScalpRadar v3 · Multi-Timeframe · Binance &amp; BingX · Aucune donnée collectée<br>
-  ⚠ Outil d'aide uniquement. Le trading de futures comporte un risque de perte totale du capital.
+  ScalpRadar v4 · Multi-TF · Journal intégré · Aucune donnée envoyée<br>
+  ⚠ Outil d'aide uniquement. Le trading de futures comporte un risque de perte totale.
 </footer>
 
 <script>
-// ── CONFIG PAR MODE ──
+// ── CONFIG MODES ──
 const MODES = {
-  scalp: {
-    trend: '1h',   // timeframe tendance
-    entry: '5m',   // timeframe entrée
-    confirm: '15m',// timeframe confirmation
-    label: 'SIGNAL SCALP FUTURES',
-    duration: '5 à 30 minutes',
-    durSub: 'Scalp court terme',
-    atrTP: 2.5, atrSL: 1.5
-  },
-  swing: {
-    trend: '4h',
-    entry: '1h',
-    confirm: '15m',
-    label: 'SIGNAL SWING FUTURES',
-    duration: '2 à 12 heures',
-    durSub: 'Swing moyen terme',
-    atrTP: 3.5, atrSL: 1.8
-  }
+  scalp: { trend:'1h', entry:'5m', confirm:'15m', label:'SIGNAL SCALP FUTURES', duration:'5 à 30 min', durSub:'Scalp court terme', atrTP:2.5, atrSL:1.5 },
+  swing: { trend:'4h', entry:'1h', confirm:'15m', label:'SIGNAL SWING FUTURES', duration:'2 à 12 heures', durSub:'Swing moyen terme', atrTP:3.5, atrSL:1.8 }
 };
 
 let mode = 'scalp';
-let cdVal = 30, timer = null, logs = [], locked = false;
+let uiMode = 'beginner'; // 'beginner' or 'pro'
+let cdVal = 30, timer = null, locked = false;
+let currentSignal = null; // signal en attente de prise
+let activeTrade = null;   // trade en cours
+let currentPrice = 0;
 const CD_MAX = 30;
 
-setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString('fr-FR'); }, 1000);
+// ── STORAGE ──
+function saveTrades(trades){ try{ localStorage.setItem('sr_trades', JSON.stringify(trades)); }catch(e){} }
+function loadTrades(){ try{ return JSON.parse(localStorage.getItem('sr_trades') || '[]'); }catch(e){ return []; } }
+function saveActive(t){ try{ localStorage.setItem('sr_active', t ? JSON.stringify(t) : ''); }catch(e){} }
+function loadActive(){ try{ const d=localStorage.getItem('sr_active'); return d ? JSON.parse(d) : null; }catch(e){ return null; } }
 
+// ── HORLOGE ──
+setInterval(() => {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('fr-FR');
+  if (activeTrade) updateActivePnl();
+}, 1000);
+
+// ── PAGES (updated with alertes) ──
+function showPage(p) {
+  ['analyse','stats','journal','alertes'].forEach(n => {
+    const pid = 'page' + n.charAt(0).toUpperCase() + n.slice(1);
+    const tid = 'pt' + n.charAt(0).toUpperCase() + n.slice(1);
+    const pel = document.getElementById(pid);
+    const tel = document.getElementById(tid);
+    if(pel) pel.classList.toggle('active', n === p);
+    if(tel) tel.classList.toggle('active', n === p);
+  });
+  if (p === 'stats') renderStats();
+  if (p === 'journal') renderJournal();
+  if (p === 'alertes') renderAlertHistory();
+}
+
+// ── MODE DÉBUTANT / PRO ──
+function toggleUiMode() {
+  uiMode = uiMode === 'beginner' ? 'pro' : 'beginner';
+  document.getElementById('uiOptBeg').classList.toggle('active', uiMode === 'beginner');
+  document.getElementById('uiOptPro').classList.toggle('active', uiMode === 'pro');
+  document.body.classList.toggle('beginner', uiMode === 'beginner');
+  try { localStorage.setItem('sr_uimode', uiMode); } catch(e){}
+  // Re-render niveaux selon le mode
+  if (!locked) analyze();
+}
+
+// ── MODE SCALP/SWING ──
 function setMode(m) {
   mode = m;
   document.getElementById('tabScalp').classList.toggle('active', m === 'scalp');
   document.getElementById('tabSwing').classList.toggle('active', m === 'swing');
   manualAnalyze();
 }
-
+// ── FORMAT ──
 function fmt(n) {
-  if (n >= 1000) return '$' + n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (n >= 1000) return '$' + n.toLocaleString('fr-FR', { minimumFractionDigits:2, maximumFractionDigits:2 });
   if (n >= 1) return '$' + n.toFixed(4);
   return '$' + n.toFixed(6);
 }
 function fmtPct(n) { return (n >= 0 ? '+' : '') + n.toFixed(2) + '%'; }
+function fmtEur(n) { return (n >= 0 ? '+' : '') + n.toFixed(2) + '€'; }
+function fmtDur(ms) {
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return s + 's';
+  if (s < 3600) return Math.floor(s/60) + 'min ' + (s%60) + 's';
+  return Math.floor(s/3600) + 'h ' + Math.floor((s%3600)/60) + 'min';
+}
 
+// ── INDICATEURS ──
 function calcEMA(d, p) {
-  const k = 2 / (p + 1); let e = d[0]; const r = [e];
-  for (let i = 1; i < d.length; i++) { e = d[i] * k + e * (1 - k); r.push(e); }
+  const k = 2/(p+1); let e = d[0]; const r = [e];
+  for (let i = 1; i < d.length; i++) { e = d[i]*k + e*(1-k); r.push(e); }
   return r;
 }
 function calcRSI(cl, p) {
-  const ch = []; for (let i = 1; i < cl.length; i++) ch.push(cl[i] - cl[i - 1]);
+  const ch = []; for (let i = 1; i < cl.length; i++) ch.push(cl[i] - cl[i-1]);
   let ag = 0, al = 0;
   for (let i = 0; i < p; i++) { if (ch[i] > 0) ag += ch[i]; else al -= ch[i]; }
   ag /= p; al /= p;
   for (let i = p; i < ch.length; i++) {
-    ag = (ag * (p - 1) + (ch[i] > 0 ? ch[i] : 0)) / p;
-    al = (al * (p - 1) + (ch[i] < 0 ? -ch[i] : 0)) / p;
+    ag = (ag*(p-1) + (ch[i] > 0 ? ch[i] : 0)) / p;
+    al = (al*(p-1) + (ch[i] < 0 ? -ch[i] : 0)) / p;
   }
-  return al === 0 ? 100 : 100 - (100 / (1 + ag / al));
+  return al === 0 ? 100 : 100 - (100/(1 + ag/al));
 }
 function calcBB(cl, p, m) {
-  const s = cl.slice(-p), sma = s.reduce((a, b) => a + b) / p;
-  const std = Math.sqrt(s.reduce((a, v) => a + Math.pow(v - sma, 2), 0) / p);
-  const u = sma + m * std, l = sma - m * std;
-  return { u, l, pctB: (cl[cl.length - 1] - l) / (u - l) };
+  const s = cl.slice(-p), sma = s.reduce((a,b) => a+b)/p;
+  const std = Math.sqrt(s.reduce((a,v) => a + Math.pow(v-sma,2), 0)/p);
+  const u = sma+m*std, l = sma-m*std;
+  return { u, l, pctB:(cl[cl.length-1]-l)/(u-l) };
 }
 function calcMACD(cl) {
-  const e12 = calcEMA(cl, 12), e26 = calcEMA(cl, 26);
-  const ml = e12.map((v, i) => v - e26[i]).slice(26);
-  const sl = calcEMA(ml, 9);
-  return { hist: ml[ml.length - 1] - sl[sl.length - 1], prevHist: ml[ml.length - 2] - sl[sl.length - 2] };
+  const e12 = calcEMA(cl,12), e26 = calcEMA(cl,26);
+  const ml = e12.map((v,i) => v-e26[i]).slice(26);
+  const sl = calcEMA(ml,9);
+  return { hist:ml[ml.length-1]-sl[sl.length-1], prevHist:ml[ml.length-2]-sl[sl.length-2] };
 }
 function calcATR(hi, lo, cl, p) {
   const trs = [];
-  for (let i = 1; i < cl.length; i++) trs.push(Math.max(hi[i] - lo[i], Math.abs(hi[i] - cl[i - 1]), Math.abs(lo[i] - cl[i - 1])));
-  return trs.slice(-p).reduce((a, b) => a + b) / p;
+  for (let i = 1; i < cl.length; i++) trs.push(Math.max(hi[i]-lo[i], Math.abs(hi[i]-cl[i-1]), Math.abs(lo[i]-cl[i-1])));
+  return trs.slice(-p).reduce((a,b) => a+b) / p;
 }
 function calcVol(vols) {
-  const last = vols[vols.length - 1], avg = vols.slice(-21, -1).reduce((a, b) => a + b) / 20;
-  return { ratio: last / avg };
+  const last = vols[vols.length-1], avg = vols.slice(-21,-1).reduce((a,b) => a+b)/20;
+  return { ratio:last/avg };
 }
-function scoreFromData(closes, highs, lows, vols) {
-  const rsi = calcRSI(closes, 14);
-  const bb = calcBB(closes, 20, 2);
-  const macd = calcMACD(closes);
-  const vol = calcVol(vols);
-  const e9 = calcEMA(closes, 9), e21 = calcEMA(closes, 21);
-  const ce9 = e9[e9.length - 1], pe9 = e9[e9.length - 2];
-  const ce21 = e21[e21.length - 1], pe21 = e21[e21.length - 2];
-  const price = closes[closes.length - 1], prev = closes[closes.length - 2];
-  let score = 0;
-  if (rsi < 30) score += 2; else if (rsi < 42) score += 1; else if (rsi > 70) score -= 2; else if (rsi > 58) score -= 1;
-  if (pe9 < pe21 && ce9 > ce21) score += 2; else if (pe9 > pe21 && ce9 < ce21) score -= 2; else if (ce9 > ce21) score += 1; else score -= 1;
-  if (macd.hist > 0 && macd.hist > macd.prevHist) score += 2; else if (macd.hist > 0) score += 1; else if (macd.hist < 0 && macd.hist < macd.prevHist) score -= 2; else score -= 1;
-  if (bb.pctB < 0.1) score += 2; else if (bb.pctB < 0.3) score += 1; else if (bb.pctB > 0.9) score -= 2; else if (bb.pctB > 0.7) score -= 1;
-  const up = price > prev;
-  if (vol.ratio > 1.5) { if (up) score += 1; else score -= 1; }
-  return { score, rsi, bb, macd, vol, e9, e21, ce9, ce21 };
+function scoreFrom(closes, highs, lows, vols) {
+  const rsi = calcRSI(closes,14), bb = calcBB(closes,20,2), macd = calcMACD(closes), vol = calcVol(vols);
+  const e9 = calcEMA(closes,9), e21 = calcEMA(closes,21);
+  const ce9=e9[e9.length-1], pe9=e9[e9.length-2], ce21=e21[e21.length-1], pe21=e21[e21.length-2];
+  const price=closes[closes.length-1], prev=closes[closes.length-2];
+  let sc = 0;
+  if (rsi<30) sc+=2; else if (rsi<42) sc+=1; else if (rsi>70) sc-=2; else if (rsi>58) sc-=1;
+  if (pe9<pe21&&ce9>ce21) sc+=2; else if (pe9>pe21&&ce9<ce21) sc-=2; else if (ce9>ce21) sc+=1; else sc-=1;
+  if (macd.hist>0&&macd.hist>macd.prevHist) sc+=2; else if (macd.hist>0) sc+=1; else if (macd.hist<0&&macd.hist<macd.prevHist) sc-=2; else sc-=1;
+  if (bb.pctB<0.1) sc+=2; else if (bb.pctB<0.3) sc+=1; else if (bb.pctB>0.9) sc-=2; else if (bb.pctB>0.7) sc-=1;
+  const up=price>prev; if (vol.ratio>1.5) { if(up) sc+=1; else sc-=1; }
+  return sc;
 }
-function getIndDetails(closes, highs, lows, vols) {
-  const rsi = calcRSI(closes, 14);
-  const bb = calcBB(closes, 20, 2);
-  const macd = calcMACD(closes);
-  const vol = calcVol(vols);
-  const e9 = calcEMA(closes, 9), e21 = calcEMA(closes, 21);
-  const ce9 = e9[e9.length - 1], pe9 = e9[e9.length - 2];
-  const ce21 = e21[e21.length - 1], pe21 = e21[e21.length - 2];
-  const price = closes[closes.length - 1], prev = closes[closes.length - 2];
-  const inds = [];
-  let rs, rss, rst;
-  if (rsi < 30) { rs = 2; rss = 'bull'; rst = 'Survendu → LONG'; } else if (rsi < 42) { rs = 1; rss = 'bull'; rst = 'Zone achat'; } else if (rsi > 70) { rs = -2; rss = 'bear'; rst = 'Suracheté → SHORT'; } else if (rsi > 58) { rs = -1; rss = 'bear'; rst = 'Zone vente'; } else { rs = 0; rss = 'neu'; rst = 'Neutre'; }
-  inds.push({ n: 'RSI (14)', v: rsi.toFixed(1), s: rss, t: rst });
-  let es, ess, est;
-  if (pe9 < pe21 && ce9 > ce21) { es = 2; ess = 'bull'; est = 'Golden cross ↑'; } else if (pe9 > pe21 && ce9 < ce21) { es = -2; ess = 'bear'; est = 'Death cross ↓'; } else if (ce9 > ce21) { es = 1; ess = 'bull'; est = 'Tendance haussière'; } else { es = -1; ess = 'bear'; est = 'Tendance baissière'; }
-  inds.push({ n: 'EMA 9/21', v: (((ce9 - ce21) / ce21) * 100).toFixed(3) + '%', s: ess, t: est });
-  let ms, mss, mst;
-  if (macd.hist > 0 && macd.hist > macd.prevHist) { ms = 2; mss = 'bull'; mst = 'Momentum ↑ accélère'; } else if (macd.hist > 0) { ms = 1; mss = 'bull'; mst = 'Momentum haussier'; } else if (macd.hist < 0 && macd.hist < macd.prevHist) { ms = -2; mss = 'bear'; mst = 'Momentum ↓ accélère'; } else { ms = -1; mss = 'bear'; mst = 'Momentum baissier'; }
-  inds.push({ n: 'MACD', v: macd.hist.toFixed(5), s: mss, t: mst });
-  let bs, bss, bst;
-  if (bb.pctB < 0.1) { bs = 2; bss = 'bull'; bst = 'Bande inf. → rebond'; } else if (bb.pctB < 0.3) { bs = 1; bss = 'bull'; bst = 'Zone basse'; } else if (bb.pctB > 0.9) { bs = -2; bss = 'bear'; bst = 'Bande sup. → retour'; } else if (bb.pctB > 0.7) { bs = -1; bss = 'bear'; bst = 'Zone haute'; } else { bs = 0; bss = 'neu'; bst = 'Centre (' + (bb.pctB * 100).toFixed(0) + '%)'; }
-  inds.push({ n: 'Bollinger %B', v: (bb.pctB * 100).toFixed(1) + '%', s: bss, t: bst });
-  const up = price > prev;
-  let vs, vss, vst;
-  if (vol.ratio > 1.8) { vs = up ? 1 : -1; vss = up ? 'bull' : 'bear'; vst = 'Vol. fort ×' + vol.ratio.toFixed(1); } else if (vol.ratio > 1.3) { vs = up ? 1 : -1; vss = up ? 'bull' : 'bear'; vst = 'Vol. élevé ×' + vol.ratio.toFixed(1); } else if (vol.ratio < 0.6) { vs = 0; vss = 'neu'; vst = 'Vol. faible'; } else { vs = 0; vss = 'neu'; vst = 'Vol. normal ×' + vol.ratio.toFixed(1); }
-  inds.push({ n: 'Volume/Moy.', v: '×' + vol.ratio.toFixed(2), s: vss, t: vst });
+function getInds(closes, highs, lows, vols) {
+  const rsi=calcRSI(closes,14), bb=calcBB(closes,20,2), macd=calcMACD(closes), vol=calcVol(vols);
+  const e9=calcEMA(closes,9), e21=calcEMA(closes,21);
+  const ce9=e9[e9.length-1], pe9=e9[e9.length-2], ce21=e21[e21.length-1], pe21=e21[e21.length-2];
+  const price=closes[closes.length-1], prev=closes[closes.length-2];
+  const inds=[];
+  let rs,rss,rst; if(rsi<30){rs=2;rss='bull';rst='Survendu → LONG';}else if(rsi<42){rs=1;rss='bull';rst='Zone achat';}else if(rsi>70){rs=-2;rss='bear';rst='Suracheté → SHORT';}else if(rsi>58){rs=-1;rss='bear';rst='Zone vente';}else{rs=0;rss='neu';rst='Neutre';}
+  inds.push({n:'RSI (14)',v:rsi.toFixed(1),s:rss,t:rst});
+  let es,ess,est; if(pe9<pe21&&ce9>ce21){es=2;ess='bull';est='Golden cross ↑';}else if(pe9>pe21&&ce9<ce21){es=-2;ess='bear';est='Death cross ↓';}else if(ce9>ce21){es=1;ess='bull';est='Tendance haussière';}else{es=-1;ess='bear';est='Tendance baissière';}
+  inds.push({n:'EMA 9/21',v:(((ce9-ce21)/ce21)*100).toFixed(3)+'%',s:ess,t:est});
+  let ms,mss,mst; if(macd.hist>0&&macd.hist>macd.prevHist){ms=2;mss='bull';mst='Momentum ↑ accélère';}else if(macd.hist>0){ms=1;mss='bull';mst='Momentum haussier';}else if(macd.hist<0&&macd.hist<macd.prevHist){ms=-2;mss='bear';mst='Momentum ↓ accélère';}else{ms=-1;mss='bear';mst='Momentum baissier';}
+  inds.push({n:'MACD',v:macd.hist.toFixed(5),s:mss,t:mst});
+  let bs,bss,bst; if(bb.pctB<0.1){bs=2;bss='bull';bst='Bande inf. → rebond';}else if(bb.pctB<0.3){bs=1;bss='bull';bst='Zone basse';}else if(bb.pctB>0.9){bs=-2;bss='bear';bst='Bande sup. → retour';}else if(bb.pctB>0.7){bs=-1;bss='bear';bst='Zone haute';}else{bs=0;bss='neu';bst='Centre ('+(bb.pctB*100).toFixed(0)+'%)';}
+  inds.push({n:'Bollinger %B',v:(bb.pctB*100).toFixed(1)+'%',s:bss,t:bst});
+  const up=price>prev; let vs,vss,vst; if(vol.ratio>1.8){vs=up?1:-1;vss=up?'bull':'bear';vst='Vol. fort ×'+vol.ratio.toFixed(1);}else if(vol.ratio>1.3){vs=up?1:-1;vss=up?'bull':'bear';vst='Vol. élevé ×'+vol.ratio.toFixed(1);}else if(vol.ratio<0.6){vs=0;vss='neu';vst='Vol. faible';}else{vs=0;vss='neu';vst='Vol. normal ×'+vol.ratio.toFixed(1);}
+  inds.push({n:'Volume/Moy.',v:'×'+vol.ratio.toFixed(2),s:vss,t:vst});
   return inds;
 }
 function suggestLev(atr, price, riskPct) {
-  const slPct = (atr / price) * 100 * 1.5;
-  const maxL = riskPct / slPct;
-  return {
-    safe: Math.max(1, Math.min(3, Math.floor(maxL * 0.5))),
-    mod: Math.max(2, Math.min(10, Math.floor(maxL * 0.8))),
-    risky: Math.max(3, Math.min(20, Math.floor(maxL * 1.2))),
-    slPct: slPct.toFixed(2)
-  };
+  const slPct = (atr/price)*100*1.5, maxL = riskPct/slPct;
+  return { safe:Math.max(1,Math.min(3,Math.floor(maxL*0.5))), mod:Math.max(2,Math.min(10,Math.floor(maxL*0.8))), risky:Math.max(3,Math.min(20,Math.floor(maxL*1.2))), slPct:slPct.toFixed(2) };
 }
 
+// ── FETCH ──
 async function fetchKlines(pair, tf, source) {
   if (source === 'bingx') {
-    const sym = pair.replace('USDT', '') + '-USDT';
-    const url = 'https://open-api.bingx.com/openApi/swap/v2/quote/klines?symbol=' + sym + '&interval=' + tf + '&limit=150';
+    const sym = pair.replace('USDT','') + '-USDT';
+    // Mapping timeframes Binance → BingX
+    const tfMap = {'1m':'1m','3m':'3m','5m':'5m','15m':'15m','30m':'30m','1h':'1h','4h':'4h'};
+    const bxTf = tfMap[tf] || tf;
+    const url = 'https://open-api.bingx.com/openApi/swap/v3/quote/klines?symbol='+sym+'&interval='+bxTf+'&limit=150';
+    // BingX bloque les appels directs depuis un navigateur (CORS) — on passe par un proxy
+    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+    let j;
     try {
-      const r = await fetch(url); if (!r.ok) throw new Error('BingX ' + r.status);
-      const j = await r.json(); const d = j.data || j;
-      if (!Array.isArray(d) || d.length < 50) throw new Error('Données insuffisantes');
-      return { closes: d.map(c => parseFloat(c[4] || c.close)), highs: d.map(c => parseFloat(c[2] || c.high)), lows: d.map(c => parseFloat(c[3] || c.low)), vols: d.map(c => parseFloat(c[5] || c.volume)) };
-    } catch (e) { throw new Error('BingX : ' + e.message); }
+      const r = await fetch(proxyUrl);
+      if (!r.ok) throw new Error('proxy ' + r.status);
+      j = await r.json();
+    } catch(e) {
+      throw new Error('BingX indisponible (' + e.message + ') — utilise Binance');
+    }
+    // BingX v3 retourne { code, data: [ {open,close,high,low,volume,time}, ... ] }
+    const d = j.data || j;
+    if (!Array.isArray(d) || d.length < 50) throw new Error('BingX : données insuffisantes pour ' + sym);
+    // Chaque élément est un objet avec des clés nommées
+    const first = d[0];
+    const isObj = typeof first === 'object' && !Array.isArray(first) && first !== null;
+    return {
+      closes: d.map(c => parseFloat(isObj ? (c.close ?? c[4]) : c[4])),
+      highs:  d.map(c => parseFloat(isObj ? (c.high  ?? c[2]) : c[2])),
+      lows:   d.map(c => parseFloat(isObj ? (c.low   ?? c[3]) : c[3])),
+      vols:   d.map(c => parseFloat(isObj ? (c.volume?? c[5]) : c[5]))
+    };
   }
-  const url = 'https://api.binance.com/api/v3/klines?symbol=' + pair + '&interval=' + tf + '&limit=150';
+  // Binance
+  const url = 'https://api.binance.com/api/v3/klines?symbol='+pair+'&interval='+tf+'&limit=150';
   let d;
-  try { const r = await fetch(url); if (!r.ok) throw new Error(r.status); d = await r.json(); }
-  catch (e) {
-    const r2 = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
-    if (!r2.ok) throw new Error('Connexion impossible — mets le fichier sur GitHub Pages');
-    d = await r2.json();
+  try { const r=await fetch(url); if(!r.ok) throw new Error(r.status); d=await r.json(); }
+  catch(e) {
+    const r2=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(url));
+    if(!r2.ok) throw new Error('Connexion impossible — mets le fichier sur GitHub Pages');
+    d=await r2.json();
   }
-  if (!Array.isArray(d) || d.length < 50) throw new Error('Données insuffisantes');
-  return { closes: d.map(c => parseFloat(c[4])), highs: d.map(c => parseFloat(c[2])), lows: d.map(c => parseFloat(c[3])), vols: d.map(c => parseFloat(c[5])) };
+  if(!Array.isArray(d)||d.length<50) throw new Error('Données insuffisantes');
+  return { closes:d.map(c=>parseFloat(c[4])), highs:d.map(c=>parseFloat(c[2])), lows:d.map(c=>parseFloat(c[3])), vols:d.map(c=>parseFloat(c[5])) };
 }
 
+// ── ANALYSE ──
 async function analyze() {
-  if (locked) return;
-  const pair = document.getElementById('pair').value;
-  const riskPct = parseFloat(document.getElementById('risk').value);
-  const capital = parseFloat(document.getElementById('capital').value) || 30;
-  const source = document.getElementById('source').value;
-  const cfg = MODES[mode];
-  const sigCard = document.getElementById('sigCard');
+  if (locked && !activeTrade) return;
+  const pair=document.getElementById('pair').value;
+  const riskPct=parseFloat(document.getElementById('risk').value);
+  const capital=parseFloat(document.getElementById('capital').value)||30;
+  const source=document.getElementById('source').value;
+  const cfg=MODES[mode];
+  const sigCard=document.getElementById('sigCard');
 
   try {
-    // ── Fetch 3 timeframes en parallèle ──
-    const [dTrend, dEntry, dConfirm] = await Promise.all([
-      fetchKlines(pair, cfg.trend, source),
-      fetchKlines(pair, cfg.entry, source),
-      fetchKlines(pair, cfg.confirm, source)
+    const [dT,dE,dC] = await Promise.all([
+      fetchKlines(pair,cfg.trend,source),
+      fetchKlines(pair,cfg.entry,source),
+      fetchKlines(pair,cfg.confirm,source)
     ]);
+    const price=dE.closes[dE.closes.length-1];
+    const prev=dE.closes[dE.closes.length-2];
+    currentPrice = price;
+    const chgPct=((price-prev)/prev)*100;
+    const atr=calcATR(dE.highs,dE.lows,dE.closes,14);
 
-    const scoreTrend = scoreFromData(dTrend.closes, dTrend.highs, dTrend.lows, dTrend.vols);
-    const scoreEntry = scoreFromData(dEntry.closes, dEntry.highs, dEntry.lows, dEntry.vols);
-    const scoreConfirm = scoreFromData(dConfirm.closes, dConfirm.highs, dConfirm.lows, dConfirm.vols);
+    const sTrend=scoreFrom(dT.closes,dT.highs,dT.lows,dT.vols);
+    const sEntry=scoreFrom(dE.closes,dE.highs,dE.lows,dE.vols);
+    const sConf=scoreFrom(dC.closes,dC.highs,dC.lows,dC.vols);
 
-    const price = dEntry.closes[dEntry.closes.length - 1];
-    const prev = dEntry.closes[dEntry.closes.length - 2];
-    const chgPct = ((price - prev) / prev) * 100;
-    const atr = calcATR(dEntry.highs, dEntry.lows, dEntry.closes, 14);
+    const tBull=sTrend>=2, tBear=sTrend<=-2;
+    const eBull=sEntry>=3, eBear=sEntry<=-3;
+    const cBull=sConf>0, cBear=sConf<0;
 
-    // ── Logique de décision multi-TF ──
-    // Le trend doit être aligné (>=2), l'entry doit confirmer (>=3)
-    // Le confirm sert à valider
-    const trendBull = scoreTrend.score >= 2;
-    const trendBear = scoreTrend.score <= -2;
-    const entryBull = scoreEntry.score >= 3;
-    const entryBear = scoreEntry.score <= -3;
-    const confirmBull = scoreConfirm.score > 0;
-    const confirmBear = scoreConfirm.score < 0;
+    const isLong=tBull&&eBull&&cBull;
+    const isShort=tBear&&eBear&&cBear;
+    const isWait=!isLong&&!isShort;
 
-    const isLong = trendBull && entryBull && confirmBull;
-    const isShort = trendBear && entryBear && confirmBear;
-    const isWait = !isLong && !isShort;
+    let alignCount=0;
+    if(isLong){if(tBull)alignCount++;if(eBull)alignCount++;if(cBull)alignCount++;}
+    if(isShort){if(tBear)alignCount++;if(eBear)alignCount++;if(cBear)alignCount++;}
+    const conf=isWait?Math.min(40,Math.round((Math.abs(sEntry)/9)*60)):Math.round(50+alignCount*16);
 
-    // Confiance = alignement des 3 TF
-    let alignCount = 0;
-    if (isLong) { if (trendBull) alignCount++; if (entryBull) alignCount++; if (confirmBull) alignCount++; }
-    if (isShort) { if (trendBear) alignCount++; if (entryBear) alignCount++; if (confirmBear) alignCount++; }
-    const conf = isWait ? Math.min(40, Math.round((Math.abs(scoreEntry.score) / 9) * 60)) : Math.round(50 + alignCount * 16);
-
-    // ── PANEL MTF ──
-    const tfLabels = [
-      { tf: cfg.trend, sc: scoreTrend.score, role: 'Tendance' },
-      { tf: cfg.confirm, sc: scoreConfirm.score, role: 'Confirmation' },
-      { tf: cfg.entry, sc: scoreEntry.score, role: 'Entrée' }
-    ];
-    document.getElementById('mtfRows').innerHTML = tfLabels.map(row => {
-      const pct = Math.min(100, (Math.abs(row.sc) / 9) * 100);
-      const bull = row.sc >= 2, bear = row.sc <= -2;
-      const color = bull ? 'var(--green)' : bear ? 'var(--red)' : 'var(--muted)';
-      const badgeCls = bull ? 'badge-bull' : bear ? 'badge-bear' : 'badge-neu';
-      const badgeTxt = bull ? (row.sc >= 5 ? 'Haussier fort' : 'Haussier') : bear ? (row.sc <= -5 ? 'Baissier fort' : 'Baissier') : 'Neutre';
-      return '<div class="mtf-row">' +
-        '<span class="mtf-tf">' + row.tf + '</span>' +
-        '<div class="mtf-bar-wrap"><div class="mtf-bar" style="width:' + pct + '%;background:' + color + '"></div></div>' +
-        '<span class="mtf-label ' + (bull ? 'bull' : bear ? 'bear' : 'neu') + '"><span class="mtf-badge ' + badgeCls + '">' + badgeTxt + '</span></span>' +
-        '<span class="mtf-role">' + row.role + '</span>' +
-        '</div>';
+    // MTF
+    const tfRows=[{tf:cfg.trend,sc:sTrend,role:'Tendance'},{tf:cfg.confirm,sc:sConf,role:'Confirmation'},{tf:cfg.entry,sc:sEntry,role:'Entrée'}];
+    document.getElementById('mtfRows').innerHTML=tfRows.map(row=>{
+      const pct=Math.min(100,(Math.abs(row.sc)/9)*100);
+      const bull=row.sc>=2,bear=row.sc<=-2;
+      const color=bull?'var(--green)':bear?'var(--red)':'var(--muted)';
+      const bc=bull?'badge-bull':bear?'badge-bear':'badge-neu';
+      const bt=bull?(row.sc>=5?'Haussier fort':'Haussier'):bear?(row.sc<=-5?'Baissier fort':'Baissier'):'Neutre';
+      return '<div class="mtf-row"><span class="mtf-tf">'+row.tf+'</span><div class="mtf-bar-wrap"><div class="mtf-bar" style="width:'+pct+'%;background:'+color+'"></div></div><span style="display:flex;justify-content:flex-end;"><span class="mtf-badge '+bc+'">'+bt+'</span></span><span class="mtf-role">'+row.role+'</span></div>';
     }).join('');
+    let conc='';
+    if(isLong) conc='✓ 3/3 TF haussiers — signal LONG validé.';
+    else if(isShort) conc='✓ 3/3 TF baissiers — signal SHORT validé.';
+    else if(tBull&&!eBull) conc='⏳ Tendance haussière sur '+cfg.trend+' — attente signal sur '+cfg.entry+'.';
+    else if(tBear&&!eBear) conc='⏳ Tendance baissière sur '+cfg.trend+' — attente signal sur '+cfg.entry+'.';
+    else conc='→ Pas d\'alignement entre les timeframes. Ne pas trader.';
+    document.getElementById('mtfConclusion').textContent=conc;
 
-    // Conclusion MTF
-    let conc = '';
-    if (isLong) conc = '✓ Les 3 timeframes sont alignés à la hausse — signal LONG validé.';
-    else if (isShort) conc = '✓ Les 3 timeframes sont alignés à la baisse — signal SHORT validé.';
-    else if (trendBull && !entryBull) conc = '⏳ Tendance haussière sur ' + cfg.trend + ' mais pas encore de signal sur ' + cfg.entry + '. Patiente.';
-    else if (trendBear && !entryBear) conc = '⏳ Tendance baissière sur ' + cfg.trend + ' mais pas encore de signal sur ' + cfg.entry + '. Patiente.';
-    else conc = '→ Aucun alignement clair entre les timeframes. Ne pas trader.';
-    document.getElementById('mtfConclusion').textContent = conc;
+    // Prix
+    document.getElementById('pricePair').textContent=pair.replace('USDT','')+' / USDT';
+    document.getElementById('priceVal').textContent=fmt(price);
+    const cEl=document.getElementById('priceChg');
+    cEl.textContent=fmtPct(chgPct);cEl.className='price-chg '+(chgPct>=0?'up':'dn');
+    document.getElementById('priceSource').textContent='Source : '+(source==='bingx'?'BingX':'Binance')+' · '+cfg.entry;
 
-    // ── SIGNAL ──
-    document.getElementById('sigLbl').textContent = cfg.label;
-    sigCard.className = 'signal-card ' + (isLong ? 'long' : isShort ? 'short' : 'wait');
-    document.getElementById('sigArrow').textContent = isLong ? '↑' : isShort ? '↓' : '→';
-    document.getElementById('sigWord').textContent = isLong ? 'LONG' : isShort ? 'SHORT' : 'ATTENDS';
-    const cLabel = conf >= 80 ? 'Confiance élevée' : conf >= 60 ? 'Confiance bonne' : conf >= 40 ? 'Confiance moyenne' : 'Signal faible';
-    document.getElementById('sigSub').textContent = isWait ? 'Timeframes non alignés — patiente' : cLabel + ' · ' + alignCount + '/3 TF alignés';
+    if(!activeTrade) {
+      // Signal
+      sigCard.className='signal-card '+(isLong?'long':isShort?'short':'wait');
+      document.getElementById('sigLbl').textContent=cfg.label;
+      document.getElementById('sigArrow').textContent=isLong?'↑':isShort?'↓':'→';
+      document.getElementById('sigWord').textContent=isLong?'LONG':isShort?'SHORT':'ATTENDS';
+      const cLabel=conf>=80?'Confiance élevée':conf>=60?'Confiance bonne':conf>=40?'Confiance moyenne':'Signal faible';
+      document.getElementById('sigSub').textContent=isWait?'Timeframes non alignés — patiente':cLabel+' · '+alignCount+'/3 TF';
 
-    if (!isWait) {
-      locked = true;
-      document.getElementById('lockBadge').style.display = 'inline-flex';
-      document.getElementById('unlockWrap').style.display = 'block';
+      // Bouton Take Trade
+      const tbw=document.getElementById('takeBtnWrap');
+      const tb=document.getElementById('takeBtn');
+      if(!isWait&&!locked){
+        tbw.style.display='block';
+        tb.className='take-trade-btn '+(isLong?'long-btn':'short-btn');
+        tb.textContent=(isLong?'↑ Je prends ce trade en LONG':'↓ Je prends ce trade en SHORT');
+      } else { tbw.style.display='none'; }
+
+      if(!isWait&&!locked){
+        locked=true;
+        document.getElementById('lockBadge').style.display='inline-flex';
+        document.getElementById('unlockWrap').style.display='block';
+      }
+
+      // Durée
+      const dc=document.getElementById('durationCard');
+      if(!isWait){dc.style.display='flex';document.getElementById('durVal').textContent=cfg.duration;document.getElementById('durSub').textContent=cfg.durSub;}
+      else dc.style.display='none';
+
+      // Niveaux
+      const lw=document.getElementById('levelsWrap');
+      if(!isWait){
+        lw.style.display='grid';
+        const tp=isLong?price+atr*cfg.atrTP:price-atr*cfg.atrTP;
+        const sl=isLong?price-atr*cfg.atrSL:price+atr*cfg.atrSL;
+        const tpP=((tp-price)/price)*100, slP=((sl-price)/price)*100;
+        const rr=Math.abs(tp-price)/Math.abs(sl-price);
+        document.getElementById('lvTP').textContent=fmt(tp);
+        document.getElementById('lvTPpct').textContent=fmtPct(tpP);
+        document.getElementById('lvSL').textContent=fmt(sl);
+        document.getElementById('lvSLpct').textContent=fmtPct(slP);
+        document.getElementById('lvRR').textContent='1 : '+rr.toFixed(2);
+        document.getElementById('lvATR').textContent=fmt(atr);
+        const lev=suggestLev(atr,price,riskPct);
+        const simS={pos:capital*lev.safe,gain:capital*lev.safe*(Math.abs(tpP)/100),loss:capital*lev.safe*(Math.abs(slP)/100)};
+        const simM={pos:capital*lev.mod,gain:capital*lev.mod*(Math.abs(tpP)/100),loss:capital*lev.mod*(Math.abs(slP)/100)};
+        const simR={pos:capital*lev.risky,gain:capital*lev.risky*(Math.abs(tpP)/100),loss:capital*lev.risky*(Math.abs(slP)/100)};
+        document.getElementById('levSafe').textContent='×'+lev.safe;
+        document.getElementById('levMod').textContent='×'+lev.mod;
+        document.getElementById('levRisk').textContent='×'+lev.risky;
+        document.getElementById('levSafeEur').textContent='+'+simS.gain.toFixed(2)+'€';
+        document.getElementById('levModEur').textContent='+'+simM.gain.toFixed(2)+'€';
+        document.getElementById('levRiskEur').textContent='+'+simR.gain.toFixed(2)+'€';
+        document.getElementById('levNote').textContent='SL ≈ '+lev.slPct+'% · '+capital+'€ · Prudent = pos. '+simS.pos.toFixed(0)+'€, perte max '+simS.loss.toFixed(2)+'€';
+        document.getElementById('capPos').textContent=simM.pos.toFixed(0)+'€';
+        document.getElementById('capGain').textContent='+'+simM.gain.toFixed(2)+'€';
+        document.getElementById('capLoss').textContent='-'+simM.loss.toFixed(2)+'€';
+        document.getElementById('capNote').textContent='Levier modéré ×'+lev.mod+' sur '+capital+'€';
+
+        // Mémorise pour prise du trade
+        currentSignal={direction:isLong?'LONG':'SHORT',pair,mode,entry:price,tp,sl,atr,lev,capital,riskPct,conf};
+
+        // ── DÉBUTANT : niveaux simplifiés ──
+        const blw = document.getElementById('begLevelsWrap');
+        blw.style.display = 'block';
+        document.getElementById('begTP').textContent = fmt(tp);
+        document.getElementById('begSL').textContent = fmt(sl);
+        document.getElementById('begTPpct').textContent = 'Gain visé : ' + fmtPct(tpP);
+        document.getElementById('begSLpct').textContent = 'Perte max : ' + fmtPct(Math.abs(slP));
+      } else {
+        document.getElementById('levelsWrap').style.display = 'none';
+        document.getElementById('begLevelsWrap').style.display = 'none';
+        currentSignal = null;
+      }
     }
 
-    // ── PRIX ──
-    document.getElementById('pricePair').textContent = pair.replace('USDT', '') + ' / USDT';
-    document.getElementById('priceVal').textContent = fmt(price);
-    const cEl = document.getElementById('priceChg');
-    cEl.textContent = fmtPct(chgPct); cEl.className = 'price-chg ' + (chgPct >= 0 ? 'up' : 'dn');
-    document.getElementById('priceSource').textContent = 'Source : ' + (source === 'bingx' ? 'BingX' : 'Binance') + ' · ' + cfg.entry;
+    // Confiance
+    const cc=conf>=70?'var(--green)':conf>=45?'var(--amber)':'var(--red)';
+    document.getElementById('confPct').textContent=conf+'%';
+    document.getElementById('confPct').style.color=cc;
+    document.getElementById('confFill').style.width=conf+'%';
+    document.getElementById('confFill').style.background=cc;
+    document.getElementById('confTitle').textContent='INDICATEURS · '+cfg.entry.toUpperCase();
+    const inds=getInds(dE.closes,dE.highs,dE.lows,dE.vols);
+    document.getElementById('indRows').innerHTML=inds.map(d=>'<div class="ind-row"><span class="ind-name">'+d.n+'</span><span class="ind-right"><span class="ind-val '+(d.s==='bull'?'bull':d.s==='bear'?'bear':'neu')+'">'+d.v+'</span><span class="ind-sig '+(d.s==='bull'?'sig-bull':d.s==='bear'?'sig-bear':'sig-neu')+'">'+d.t+'</span></span></div>').join('');
 
-    // ── DURÉE ──
-    const dc = document.getElementById('durationCard');
-    if (!isWait) {
-      dc.style.display = 'flex';
-      document.getElementById('durVal').textContent = cfg.duration;
-      document.getElementById('durSub').textContent = cfg.durSub;
-    } else { dc.style.display = 'none'; }
-
-    // ── NIVEAUX ──
-    const lw = document.getElementById('levelsWrap');
-    if (!isWait) {
-      lw.style.display = 'grid';
-      const tp = isLong ? price + atr * cfg.atrTP : price - atr * cfg.atrTP;
-      const sl = isLong ? price - atr * cfg.atrSL : price + atr * cfg.atrSL;
-      const tpP = ((tp - price) / price) * 100;
-      const slP = ((sl - price) / price) * 100;
-      const rr = Math.abs(tp - price) / Math.abs(sl - price);
-      document.getElementById('lvTP').textContent = fmt(tp);
-      document.getElementById('lvTPpct').textContent = fmtPct(tpP);
-      document.getElementById('lvSL').textContent = fmt(sl);
-      document.getElementById('lvSLpct').textContent = fmtPct(slP);
-      document.getElementById('lvRR').textContent = '1 : ' + rr.toFixed(2);
-      document.getElementById('lvATR').textContent = fmt(atr);
-      const lev = suggestLev(atr, price, riskPct);
-      const simS = { pos: capital * lev.safe, gain: capital * lev.safe * (Math.abs(tpP) / 100), loss: capital * lev.safe * (Math.abs(slP) / 100) };
-      const simM = { pos: capital * lev.mod, gain: capital * lev.mod * (Math.abs(tpP) / 100), loss: capital * lev.mod * (Math.abs(slP) / 100) };
-      const simR = { pos: capital * lev.risky, gain: capital * lev.risky * (Math.abs(tpP) / 100), loss: capital * lev.risky * (Math.abs(slP) / 100) };
-      document.getElementById('levSafe').textContent = '×' + lev.safe;
-      document.getElementById('levMod').textContent = '×' + lev.mod;
-      document.getElementById('levRisk').textContent = '×' + lev.risky;
-      document.getElementById('levSafeEur').textContent = '+' + simS.gain.toFixed(2) + '€';
-      document.getElementById('levModEur').textContent = '+' + simM.gain.toFixed(2) + '€';
-      document.getElementById('levRiskEur').textContent = '+' + simR.gain.toFixed(2) + '€';
-      document.getElementById('levNote').textContent = 'SL ≈ ' + lev.slPct + '% · ' + capital + '€ capital · Prudent = pos. ' + simS.pos.toFixed(0) + '€, perte max ' + simS.loss.toFixed(2) + '€ si SL';
-      document.getElementById('capPos').textContent = simM.pos.toFixed(0) + '€';
-      document.getElementById('capGain').textContent = '+' + simM.gain.toFixed(2) + '€';
-      document.getElementById('capLoss').textContent = '-' + simM.loss.toFixed(2) + '€';
-      document.getElementById('capNote').textContent = 'Levier modéré ×' + lev.mod + ' sur ' + capital + '€';
-      const t = new Date().toLocaleTimeString('fr-FR');
-      const lbl = isLong ? 'LONG' : 'SHORT';
-      logs.unshift({ t, p: pair.replace('USDT', ''), mode: mode === 'scalp' ? 'S' : 'SW', lbl, cls: isLong ? 'l' : 's', price: fmt(price), conf });
-      if (logs.length > 20) logs.pop();
-      document.getElementById('logList').innerHTML = logs.map(l => '<div class="log-item ' + l.cls + '">' + l.t + ' [' + l.mode + '] ' + l.p + ' → ' + l.lbl + ' @ ' + l.price + ' (' + l.conf + '%)</div>').join('');
-    } else { lw.style.display = 'none'; }
-
-    // ── CONFIANCE ──
-    const cc = conf >= 70 ? 'var(--green)' : conf >= 45 ? 'var(--amber)' : 'var(--red)';
-    document.getElementById('confPct').textContent = conf + '%';
-    document.getElementById('confPct').style.color = cc;
-    document.getElementById('confFill').style.width = conf + '%';
-    document.getElementById('confFill').style.background = cc;
-    document.getElementById('confTitle').textContent = 'INDICATEURS · ' + cfg.entry.toUpperCase();
-    const inds = getIndDetails(dEntry.closes, dEntry.highs, dEntry.lows, dEntry.vols);
-    document.getElementById('indRows').innerHTML = inds.map(d =>
-      '<div class="ind-row"><span class="ind-name">' + d.n + '</span><span class="ind-right"><span class="ind-val ' + (d.s === 'bull' ? 'bull' : d.s === 'bear' ? 'bear' : 'neu') + '">' + d.v + '</span><span class="ind-sig ' + (d.s === 'bull' ? 'sig-bull' : d.s === 'bear' ? 'sig-bear' : 'sig-neu') + '">' + d.t + '</span></span></div>'
-    ).join('');
-
-  } catch (err) {
-    sigCard.className = 'signal-card wait';
-    document.getElementById('sigArrow').textContent = '!';
-    document.getElementById('sigWord').textContent = 'ERREUR';
-    document.getElementById('sigSub').textContent = err.message;
-    console.error(err);
+  } catch(err) {
+    sigCard.className='signal-card wait';
+    document.getElementById('sigArrow').textContent='!';
+    document.getElementById('sigWord').textContent='ERREUR';
+    document.getElementById('sigSub').textContent=err.message;
   }
 }
 
+// ── PRISE DE TRADE ──
+function takeTrade() {
+  if (!currentSignal) return;
+  const lev = currentSignal.lev.mod; // levier modéré par défaut
+  activeTrade = {
+    ...currentSignal,
+    lev,
+    position: currentSignal.capital * lev,
+    entryTime: Date.now(),
+    id: Date.now()
+  };
+  saveActive(activeTrade);
+  locked = true;
+  currentSignal = null;
+  document.getElementById('takeBtnWrap').style.display = 'none';
+  document.getElementById('unlockWrap').style.display = 'none';
+  document.getElementById('lockBadge').style.display = 'none';
+  renderActiveTrade();
+}
+
+function renderActiveTrade() {
+  if (!activeTrade) { document.getElementById('activeTradeWrap').style.display='none'; return; }
+  document.getElementById('activeTradeWrap').style.display = 'block';
+  document.getElementById('atBadge').textContent = activeTrade.direction;
+  document.getElementById('atBadge').style.background = activeTrade.direction==='LONG' ? 'var(--green)' : 'var(--red)';
+  document.getElementById('atBadge').style.color = activeTrade.direction==='LONG' ? '#000' : '#fff';
+  document.getElementById('atEntry').textContent = fmt(activeTrade.entry);
+  document.getElementById('atTP').textContent = fmt(activeTrade.tp);
+  document.getElementById('atSL').textContent = fmt(activeTrade.sl);
+  document.getElementById('atLev').textContent = '×' + activeTrade.lev;
+  document.getElementById('atPos').textContent = activeTrade.position.toFixed(0) + '€';
+  updateActivePnl();
+}
+
+function updateActivePnl() {
+  if (!activeTrade) return;
+  const elapsed = Date.now() - activeTrade.entryTime;
+  document.getElementById('atDur').textContent = fmtDur(elapsed);
+  const priceDiff = activeTrade.direction === 'LONG'
+    ? (currentPrice - activeTrade.entry) / activeTrade.entry
+    : (activeTrade.entry - currentPrice) / activeTrade.entry;
+  const pnl = activeTrade.position * priceDiff;
+  const pnlEl = document.getElementById('atPnlLive');
+  pnlEl.textContent = fmtEur(pnl) + ' (' + fmtPct(priceDiff*100) + ')';
+  pnlEl.style.color = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+}
+
+// ── CLÔTURER TRADE ──
+function closeTrade() {
+  if (!activeTrade) return;
+  const exitPrice = currentPrice;
+  const priceDiff = activeTrade.direction === 'LONG'
+    ? (exitPrice - activeTrade.entry) / activeTrade.entry
+    : (activeTrade.entry - exitPrice) / activeTrade.entry;
+  const pnl = activeTrade.position * priceDiff;
+  const isWin = pnl > 0;
+  const duration = Date.now() - activeTrade.entryTime;
+  const tpHit = activeTrade.direction === 'LONG' ? exitPrice >= activeTrade.tp : exitPrice <= activeTrade.tp;
+  const slHit = activeTrade.direction === 'LONG' ? exitPrice <= activeTrade.sl : exitPrice >= activeTrade.sl;
+  const outcome = tpHit ? 'TP touché' : slHit ? 'SL touché' : 'Clôture manuelle';
+
+  const trade = {
+    ...activeTrade,
+    exitPrice, pnl, isWin, duration, outcome,
+    exitTime: Date.now(),
+    priceDiffPct: priceDiff * 100
+  };
+
+  const trades = loadTrades();
+  trades.unshift(trade);
+  saveTrades(trades);
+
+  activeTrade = null;
+  saveActive(null);
+  locked = false;
+  currentSignal = null;
+
+  document.getElementById('activeTradeWrap').style.display = 'none';
+  document.getElementById('levelsWrap').style.display = 'none';
+  document.getElementById('durationCard').style.display = 'none';
+
+  // Feedback visuel
+  const sigCard = document.getElementById('sigCard');
+  sigCard.className = 'signal-card ' + (isWin ? 'long' : 'short');
+  document.getElementById('sigArrow').textContent = isWin ? '✓' : '✗';
+  document.getElementById('sigWord').textContent = isWin ? 'GAGNÉ' : 'PERDU';
+  document.getElementById('sigSub').textContent = fmtEur(pnl) + ' · ' + outcome + ' · ' + fmtDur(duration);
+  document.getElementById('lockBadge').style.display = 'none';
+
+  setTimeout(() => {
+    locked = false;
+    manualAnalyze();
+  }, 3000);
+}
+
+// ── UNLOCK ──
 function unlock() {
   locked = false;
+  currentSignal = null;
   document.getElementById('lockBadge').style.display = 'none';
   document.getElementById('unlockWrap').style.display = 'none';
+  document.getElementById('takeBtnWrap').style.display = 'none';
   analyze();
 }
+
+// ── TIMER ──
 function manualAnalyze() {
+  if (activeTrade) { analyze(); return; }
   locked = false;
+  currentSignal = null;
   document.getElementById('lockBadge').style.display = 'none';
   document.getElementById('unlockWrap').style.display = 'none';
+  document.getElementById('takeBtnWrap').style.display = 'none';
   analyze(); startTimer();
 }
 function startTimer() {
@@ -660,14 +1056,322 @@ function startTimer() {
   timer = setInterval(() => {
     cdVal--;
     document.getElementById('cdNum').textContent = cdVal;
-    document.getElementById('cdFill').style.width = (cdVal / CD_MAX * 100) + '%';
+    document.getElementById('cdFill').style.width = (cdVal/CD_MAX*100) + '%';
     if (cdVal <= 0) { analyze(); cdVal = CD_MAX; }
   }, 1000);
 }
-document.getElementById('pair').onchange = manualAnalyze;
-document.getElementById('risk').onchange = () => { if (!locked) analyze(); };
-document.getElementById('capital').oninput = () => { if (!locked) analyze(); };
+
+// ── STATS ──
+function renderStats() {
+  const trades = loadTrades();
+  const grid = document.getElementById('statsGrid');
+  if (trades.length === 0) {
+    grid.innerHTML = '<div class="stat-card full empty-state">Aucun trade clôturé pour l\'instant.<br>Prends ton premier trade depuis l\'onglet Analyse !</div>';
+    return;
+  }
+  const wins = trades.filter(t => t.isWin);
+  const losses = trades.filter(t => !t.isWin);
+  const totalPnl = trades.reduce((a,t) => a + t.pnl, 0);
+  const wr = (wins.length / trades.length) * 100;
+  const bestTrade = trades.reduce((a,t) => t.pnl > a.pnl ? t : a, trades[0]);
+  const worstTrade = trades.reduce((a,t) => t.pnl < a.pnl ? t : a, trades[0]);
+  const avgDur = trades.reduce((a,t) => a + t.duration, 0) / trades.length;
+  const avgGain = wins.length ? wins.reduce((a,t) => a+t.pnl,0)/wins.length : 0;
+  const avgLoss = losses.length ? losses.reduce((a,t) => a+t.pnl,0)/losses.length : 0;
+
+  grid.innerHTML = `
+    <div class="stat-card full">
+      <div class="stat-lbl">TAUX DE RÉUSSITE</div>
+      <div class="stat-val" style="color:${wr>=50?'var(--green)':'var(--red)'}">${wr.toFixed(0)}%</div>
+      <div class="wr-bar-wrap"><div class="wr-bar-win" style="width:${wr}%"></div></div>
+      <div class="stat-sub">${wins.length} gagnants · ${losses.length} perdants · ${trades.length} total</div>
+    </div>
+    <div class="stat-card full">
+      <div class="stat-lbl">P&L TOTAL</div>
+      <div class="stat-val" style="color:${totalPnl>=0?'var(--green)':'var(--red)'}">${fmtEur(totalPnl)}</div>
+      <div class="stat-sub">sur ${trades.length} trades clôturés</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">MEILLEUR TRADE</div>
+      <div class="stat-val green">${fmtEur(bestTrade.pnl)}</div>
+      <div class="stat-sub">${bestTrade.pair.replace('USDT','')} ${bestTrade.direction}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">PIRE TRADE</div>
+      <div class="stat-val red2">${fmtEur(worstTrade.pnl)}</div>
+      <div class="stat-sub">${worstTrade.pair.replace('USDT','')} ${worstTrade.direction}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">GAIN MOYEN</div>
+      <div class="stat-val green">${wins.length ? fmtEur(avgGain) : '—'}</div>
+      <div class="stat-sub">par trade gagnant</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">PERTE MOYENNE</div>
+      <div class="stat-val red2">${losses.length ? fmtEur(avgLoss) : '—'}</div>
+      <div class="stat-sub">par trade perdant</div>
+    </div>
+    <div class="stat-card full">
+      <div class="stat-lbl">DURÉE MOYENNE PAR TRADE</div>
+      <div class="stat-val" style="color:var(--purple);font-size:18px;">${fmtDur(avgDur)}</div>
+    </div>
+  `;
+}
+
+// ── JOURNAL ──
+function renderJournal() {
+  const trades = loadTrades();
+  const el = document.getElementById('journalList');
+  if (trades.length === 0) { el.innerHTML = '<div class="empty-state">Aucun trade enregistré.</div>'; return; }
+  el.innerHTML = trades.map(t => {
+    const win = t.isWin;
+    const dirClass = win ? 'win-' + t.direction.toLowerCase() : 'loss-' + t.direction.toLowerCase();
+    const arrow = t.direction === 'LONG' ? '↑' : '↓';
+    const date = new Date(t.exitTime).toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    return `<div class="trade-item">
+      <div class="trade-dir ${dirClass}">${arrow}</div>
+      <div class="trade-info">
+        <div class="trade-meta">${date} · ${t.pair.replace('USDT','')} · ${t.mode==='scalp'?'Scalp':'Swing'} · ×${t.lev}</div>
+        <div class="trade-detail">Entrée ${fmt(t.entry)} → Sortie ${fmt(t.exitPrice)}</div>
+        <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:2px;">${t.outcome} · ${fmtDur(t.duration)}</div>
+      </div>
+      <div class="trade-result">
+        <div class="trade-pnl ${win?'win-txt':'loss-txt'}">${fmtEur(t.pnl)}</div>
+        <div class="trade-outcome ${win?'win-txt':'loss-txt'}">${fmtPct(t.priceDiffPct)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clearJournal() {
+  if (!confirm('Effacer tout l\'historique des trades ?')) return;
+  localStorage.removeItem('sr_trades');
+  renderJournal(); renderStats();
+}
+
+// ── SCANNER D'ALERTES ──
+const ALL_PAIRS = ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','DOGEUSDT','ADAUSDT','AVAXUSDT'];
+const SCAN_INTERVAL = 3 * 60 * 1000;
+const CONF_THRESHOLD = 80;
+let scannerActive = false;
+let scanCdTimer = null;
+let scanCdVal = 0;
+let alertHistory = [];
+try { alertHistory = JSON.parse(localStorage.getItem('sr_alerts') || '[]'); } catch(e) { alertHistory = []; }
+
+function saveAlertHistory() { try { localStorage.setItem('sr_alerts', JSON.stringify(alertHistory.slice(0,50))); } catch(e) {} }
+
+async function requestNotifPermission() {
+  if (!('Notification' in window)) { updateNotifStatus('blocked'); return; }
+  const perm = await Notification.requestPermission();
+  updateNotifStatus(perm === 'granted' ? 'granted' : 'blocked');
+  if (perm === 'granted') {
+    document.getElementById('enableNotifBtn').disabled = true;
+    document.getElementById('enableNotifBtn').textContent = '✓ Notifications activées';
+  }
+}
+
+function updateNotifStatus(state) {
+  const el = document.getElementById('notifStatus');
+  const btn = document.getElementById('enableNotifBtn');
+  if (state === 'granted') {
+    el.className = 'notif-status ok';
+    el.textContent = '✓ Notifications autorisées';
+    btn.disabled = true;
+    btn.textContent = '✓ Notifications activées';
+  } else if (state === 'denied') {
+    el.className = 'notif-status warn';
+    el.textContent = '✗ Notifications bloquées — autorise-les dans les paramètres du navigateur';
+    btn.disabled = true;
+  } else if (state === 'default') {
+    el.className = 'notif-status off';
+    el.textContent = 'Clique le bouton pour autoriser les notifications';
+    btn.disabled = false;
+  } else {
+    el.className = 'notif-status warn';
+    el.textContent = 'Notifications non supportées sur ce navigateur';
+    btn.disabled = true;
+  }
+}
+
+function toggleScanner() {
+  const scalpOn = document.getElementById('alertToggleScalp').checked;
+  const swingOn = document.getElementById('alertToggleSwing').checked;
+  document.getElementById('toggleLblScalp').textContent = scalpOn ? 'On' : 'Off';
+  document.getElementById('toggleLblSwing').textContent = swingOn ? 'On' : 'Off';
+  scannerActive = scalpOn || swingOn;
+  const card = document.getElementById('scanProgressCard');
+  if (scannerActive) {
+    if (Notification.permission !== 'granted') requestNotifPermission();
+    card.style.display = 'block';
+    // Sauvegarde les préfs
+    try { localStorage.setItem('sr_scan_scalp', scalpOn ? '1' : '0'); localStorage.setItem('sr_scan_swing', swingOn ? '1' : '0'); } catch(e) {}
+    clearInterval(scanCdTimer);
+    runScan();
+    startScanCountdown();
+  } else {
+    card.style.display = 'none';
+    clearInterval(scanCdTimer);
+    ALL_PAIRS.forEach(p => { setPairStatus(p, 'scalp', '—', ''); setPairStatus(p, 'swing', '—', ''); });
+  }
+}
+
+function startScanCountdown() {
+  clearInterval(scanCdTimer);
+  scanCdVal = SCAN_INTERVAL / 1000;
+  scanCdTimer = setInterval(() => {
+    scanCdVal--;
+    const m = Math.floor(scanCdVal / 60), s = scanCdVal % 60;
+    const el = document.getElementById('scanCdTxt');
+    if (el) el.textContent = m + 'min ' + String(s).padStart(2,'0') + 's';
+    if (scanCdVal <= 0) { clearInterval(scanCdTimer); runScan(); startScanCountdown(); }
+  }, 1000);
+}
+
+function setPairStatus(pair, modeKey, text, cssClass) {
+  const el = document.getElementById('ps-' + modeKey + '-' + pair);
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'pair-status' + (cssClass ? ' ' + cssClass : '');
+}
+
+async function scanPairForMode(pair, modeKey) {
+  const cfg = MODES[modeKey];
+  setPairStatus(pair, modeKey, '…', 'scanning');
+  try {
+    const [dT, dE, dC] = await Promise.all([
+      fetchKlines(pair, cfg.trend, 'binance'),
+      fetchKlines(pair, cfg.entry, 'binance'),
+      fetchKlines(pair, cfg.confirm, 'binance')
+    ]);
+    const sTrend = scoreFrom(dT.closes, dT.highs, dT.lows, dT.vols);
+    const sEntry = scoreFrom(dE.closes, dE.highs, dE.lows, dE.vols);
+    const sConf  = scoreFrom(dC.closes, dC.highs, dC.lows, dC.vols);
+    const price  = dE.closes[dE.closes.length - 1];
+    const tBull = sTrend >= 2, tBear = sTrend <= -2;
+    const eBull = sEntry >= 3, eBear = sEntry <= -3;
+    const cBull = sConf > 0,  cBear = sConf  < 0;
+    const isLong = tBull && eBull && cBull;
+    const isShort = tBear && eBear && cBear;
+    let alignCount = 0;
+    if (isLong)  { if(tBull) alignCount++; if(eBull) alignCount++; if(cBull) alignCount++; }
+    if (isShort) { if(tBear) alignCount++; if(eBear) alignCount++; if(cBear) alignCount++; }
+    const conf = (isLong || isShort) ? Math.round(50 + alignCount * 16) : 0;
+    if ((isLong || isShort) && conf >= CONF_THRESHOLD) {
+      const dir = isLong ? 'LONG' : 'SHORT';
+      const shortPair = pair.replace('USDT', '');
+      setPairStatus(pair, modeKey, dir + ' ' + conf + '%', isLong ? 'alert-long' : 'alert-short');
+      sendNotification(shortPair, dir, price, conf, modeKey);
+      alertHistory.unshift({ pair: shortPair, dir, price, conf, modeKey, time: Date.now() });
+      saveAlertHistory();
+      renderAlertHistory();
+    } else if (isLong || isShort) {
+      setPairStatus(pair, modeKey, (isLong ? '↑' : '↓') + ' ' + conf + '%', '');
+    } else {
+      setPairStatus(pair, modeKey, '·', '');
+    }
+  } catch(e) {
+    setPairStatus(pair, modeKey, 'Err', '');
+  }
+}
+
+async function runScan() {
+  if (!scannerActive) return;
+  const scalpOn = document.getElementById('alertToggleScalp').checked;
+  const swingOn = document.getElementById('alertToggleSwing').checked;
+  const fillEl = document.getElementById('scanBarFill');
+  if (fillEl) fillEl.style.width = '0%';
+  const modes = [];
+  if (scalpOn) modes.push('scalp');
+  if (swingOn) modes.push('swing');
+  const txt = modes.map(m => m === 'scalp' ? '⚡ Scalp' : '📈 Swing').join(' + ');
+  const modeEl = document.getElementById('scanModeTxt');
+  if (modeEl) modeEl.textContent = 'SCAN ' + txt.toUpperCase();
+  for (let i = 0; i < ALL_PAIRS.length; i++) {
+    if (!scannerActive) break;
+    const pct = Math.round(((i + 1) / ALL_PAIRS.length) * 100);
+    if (fillEl) fillEl.style.width = pct + '%';
+    const ptEl = document.getElementById('scanProgressTxt');
+    if (ptEl) ptEl.textContent = (i + 1) + ' / ' + ALL_PAIRS.length + ' paires';
+    // Scanne les modes activés en parallèle pour cette paire
+    await Promise.all(modes.map(m => scanPairForMode(ALL_PAIRS[i], m)));
+    await new Promise(r => setTimeout(r, 500));
+  }
+  if (fillEl) fillEl.style.width = '100%';
+  const ptEl = document.getElementById('scanProgressTxt');
+  if (ptEl) ptEl.textContent = 'Scan terminé · ' + ALL_PAIRS.length + ' paires';
+}
+
+function sendNotification(pair, dir, price, conf, modeKey) {
+  if (Notification.permission !== 'granted') return;
+  const arrow = dir === 'LONG' ? '↑' : '↓';
+  const modeLabel = modeKey === 'scalp' ? '⚡ Scalp' : '📈 Swing';
+  const n = new Notification('ScalpRadar ' + modeLabel + ' — ' + dir + ' ' + arrow, {
+    body: pair + '/USDT · ' + fmt(price) + '\nConfiance : ' + conf + '% · 3/3 TF alignés',
+    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="%230a0c0f" rx="12"/><text y="44" x="8" font-size="40" fill="%2300e676">S</text></svg>',
+    tag: 'scalp-' + modeKey + '-' + pair,
+    requireInteraction: true
+  });
+  n.onclick = () => { window.focus(); showPage('analyse'); n.close(); };
+}
+
+function renderAlertHistory() {
+  const el = document.getElementById('alertHistoryList');
+  if (!el) return;
+  if (alertHistory.length === 0) {
+    el.innerHTML = '<div class="empty-state" style="padding:1rem 0;">Aucune alerte déclenchée.</div>';
+    return;
+  }
+  el.innerHTML = alertHistory.slice(0, 20).map(a => {
+    const d = new Date(a.time).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+    const date = new Date(a.time).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'});
+    const col = a.dir === 'LONG' ? 'var(--green)' : 'var(--red)';
+    const modeLabel = a.modeKey === 'scalp' ? '⚡' : '📈';
+    return '<div class="alert-item">' +
+      '<div class="alert-item-left" style="color:' + col + '">' + modeLabel + ' ' + (a.dir === 'LONG' ? '↑' : '↓') + ' ' + a.pair + ' — ' + a.dir + ' · ' + a.conf + '%</div>' +
+      '<div class="alert-item-right">' + date + ' ' + d + '</div>' +
+      '</div>';
+  }).join('');
+}
+
+// ── INIT ──
+document.getElementById('pair').onchange = function() {
+  // HYPE n'existe que sur BingX — bascule automatiquement
+  if (this.value === 'HYPEUSDT') {
+    document.getElementById('source').value = 'bingx';
+  }
+  manualAnalyze();
+};
+document.getElementById('risk').onchange = () => { if(!locked) analyze(); };
+document.getElementById('capital').oninput = () => { if(!locked) analyze(); };
 document.getElementById('source').onchange = manualAnalyze;
+
+// Restaure trade actif si page rechargée
+activeTrade = loadActive();
+if (activeTrade) { locked = true; renderActiveTrade(); }
+
+// Restaure mode UI
+try {
+  const saved = localStorage.getItem('sr_uimode');
+  if (saved === 'pro') { uiMode = 'pro'; document.getElementById('uiOptBeg').classList.remove('active'); document.getElementById('uiOptPro').classList.add('active'); }
+  else { document.body.classList.add('beginner'); }
+} catch(e) { document.body.classList.add('beginner'); }
+
+// Vérifie permission notif au démarrage
+if ('Notification' in window) { updateNotifStatus(Notification.permission); }
+else { updateNotifStatus('unsupported'); }
+
+// Restaure les préfs scanner
+try {
+  if (localStorage.getItem('sr_scan_scalp') === '1') { document.getElementById('alertToggleScalp').checked = true; document.getElementById('toggleLblScalp').textContent = 'On'; }
+  if (localStorage.getItem('sr_scan_swing') === '1') { document.getElementById('alertToggleSwing').checked = true; document.getElementById('toggleLblSwing').textContent = 'On'; }
+  if (localStorage.getItem('sr_scan_scalp') === '1' || localStorage.getItem('sr_scan_swing') === '1') {
+    scannerActive = true;
+    document.getElementById('scanProgressCard').style.display = 'block';
+    runScan(); startScanCountdown();
+  }
+} catch(e) {}
+
 analyze(); startTimer();
 </script>
 </body>
