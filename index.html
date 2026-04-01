@@ -1268,9 +1268,13 @@ async function scanPairForMode(pair, modeKey) {
     if ((isLong || isShort) && conf >= CONF_THRESHOLD) {
       const dir = isLong ? 'LONG' : 'SHORT';
       const shortPair = pair.replace('USDT', '');
+      const atr = calcATR(dE.highs, dE.lows, dE.closes, 14);
+      const cfg = MODES[modeKey];
+      const tp = isLong ? price + atr * cfg.atrTP : price - atr * cfg.atrTP;
+      const sl = isLong ? price - atr * cfg.atrSL : price + atr * cfg.atrSL;
       setPairStatus(pair, modeKey, dir + ' ' + conf + '%', isLong ? 'alert-long' : 'alert-short');
-      sendNotification(shortPair, dir, price, conf, modeKey);
-      alertHistory.unshift({ pair: shortPair, dir, price, conf, modeKey, time: Date.now() });
+      sendNotification(shortPair, dir, price, conf, modeKey, tp, sl);
+      alertHistory.unshift({ pair: shortPair, dir, price, conf, modeKey, tp, sl, time: Date.now() });
       saveAlertHistory();
       renderAlertHistory();
     } else if (isLong || isShort) {
@@ -1306,17 +1310,31 @@ async function runScanMode(modeKey) {
   if (modeKey === 'swing') scanningSwing = false;
 }
 
-function sendNotification(pair, dir, price, conf, modeKey) {
+function sendNotification(pair, dir, price, conf, modeKey, tp, sl) {
   if (Notification.permission !== 'granted') return;
   const arrow = dir === 'LONG' ? '↑' : '↓';
   const modeLabel = modeKey === 'scalp' ? '⚡ Scalp' : '📈 Swing';
-  const n = new Notification('ScalpRadar ' + modeLabel + ' — ' + dir + ' ' + arrow, {
-    body: pair + '/USDT · ' + fmt(price) + '\nConfiance : ' + conf + '% · 3/3 TF alignés',
+  const heure = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+  const tpPct = ((tp - price) / price * 100).toFixed(2);
+  const slPct = ((sl - price) / price * 100).toFixed(2);
+  const n = new Notification('ScalpRadar — ' + modeLabel + ' ' + dir + ' ' + arrow + ' ' + pair, {
+    body: pair + '/USDT · Entrée : ' + fmt(price) + ' · ' + heure
+      + '\nTP : ' + fmt(tp) + ' (' + (tpPct > 0 ? '+' : '') + tpPct + '%)'
+      + '  ·  SL : ' + fmt(sl) + ' (' + (slPct > 0 ? '+' : '') + slPct + '%)'
+      + '\n' + modeLabel + ' · Confiance ' + conf + '%',
     icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="%230a0c0f" rx="12"/><text y="44" x="8" font-size="40" fill="%2300e676">S</text></svg>',
     tag: 'scalp-' + modeKey + '-' + pair,
     requireInteraction: true
   });
-  n.onclick = () => { window.focus(); showPage('analyse'); n.close(); };
+  n.onclick = () => {
+    window.focus();
+    const pairSelect = document.getElementById('pair');
+    if (pairSelect) pairSelect.value = pair + 'USDT';
+    if (modeKey !== mode) setMode(modeKey);
+    showPage('analyse');
+    manualAnalyze();
+    n.close();
+  };
 }
 
 function renderAlertHistory() {
@@ -1331,8 +1349,13 @@ function renderAlertHistory() {
     const date = new Date(a.time).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'});
     const col = a.dir === 'LONG' ? 'var(--green)' : 'var(--red)';
     const modeLabel = a.modeKey === 'scalp' ? '⚡' : '📈';
+    const tpStr = a.tp ? ' · TP ' + fmt(a.tp) : '';
+    const slStr = a.sl ? ' · SL ' + fmt(a.sl) : '';
     return '<div class="alert-item">' +
-      '<div class="alert-item-left" style="color:' + col + '">' + modeLabel + ' ' + (a.dir === 'LONG' ? '↑' : '↓') + ' ' + a.pair + ' — ' + a.dir + ' · ' + a.conf + '%</div>' +
+      '<div class="alert-item-left">' +
+        '<div style="color:' + col + '">' + modeLabel + ' ' + (a.dir === 'LONG' ? '↑' : '↓') + ' ' + a.pair + ' — ' + a.dir + ' · ' + a.conf + '%</div>' +
+        '<div style="font-size:10px;font-family:\'IBM Plex Mono\',monospace;color:var(--muted);margin-top:2px;">Entrée ' + fmt(a.price) + tpStr + slStr + '</div>' +
+      '</div>' +
       '<div class="alert-item-right">' + date + ' ' + d + '</div>' +
       '</div>';
   }).join('');
