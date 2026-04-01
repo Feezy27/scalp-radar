@@ -509,11 +509,10 @@ footer{padding:.65rem 1.25rem;border-top:1px solid var(--border);font-size:11px;
 
     <div class="scan-progress" id="scanProgressCard" style="display:none;">
       <div class="scan-title">
-        <span id="scanModeTxt">SCAN EN COURS</span>
-        <span id="scanProgressTxt">0 / 8 paires</span>
+        <span id="scanModeTxt">SCAN ACTIF</span>
+        <span id="scanProgressTxt"></span>
       </div>
-      <div class="scan-bar-wrap"><div class="scan-bar-fill" id="scanBarFill" style="width:0%"></div></div>
-      <div style="margin-top:8px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);">Prochain scan dans <span id="scanCdTxt">—</span></div>
+      <div style="margin-top:6px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);">Prochain scan : <span id="scanCdTxt">—</span></div>
     </div>
 
     <div class="alert-pairs-card">
@@ -1151,11 +1150,13 @@ function clearJournal() {
 
 // ── SCANNER D'ALERTES ──
 const ALL_PAIRS = ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','DOGEUSDT','ADAUSDT','AVAXUSDT'];
-const SCAN_INTERVAL = 3 * 60 * 1000;
+const SCAN_INTERVAL_SCALP = 90 * 1000;  // 90 secondes pour le scalp
+const SCAN_INTERVAL_SWING = 5 * 60 * 1000; // 5 minutes pour le swing
 const CONF_THRESHOLD = 80;
 let scannerActive = false;
-let scanCdTimer = null;
-let scanCdVal = 0;
+let scanCdTimerScalp = null, scanCdTimerSwing = null;
+let scanCdScalp = 0, scanCdSwing = 0;
+let scanningScalp = false, scanningSwing = false;
 let alertHistory = [];
 try { alertHistory = JSON.parse(localStorage.getItem('sr_alerts') || '[]'); } catch(e) { alertHistory = []; }
 
@@ -1200,32 +1201,58 @@ function toggleScanner() {
   document.getElementById('toggleLblScalp').textContent = scalpOn ? 'On' : 'Off';
   document.getElementById('toggleLblSwing').textContent = swingOn ? 'On' : 'Off';
   scannerActive = scalpOn || swingOn;
+  try { localStorage.setItem('sr_scan_scalp', scalpOn ? '1' : '0'); localStorage.setItem('sr_scan_swing', swingOn ? '1' : '0'); } catch(e) {}
+
   const card = document.getElementById('scanProgressCard');
   if (scannerActive) {
     if (Notification.permission !== 'granted') requestNotifPermission();
     card.style.display = 'block';
-    // Sauvegarde les préfs
-    try { localStorage.setItem('sr_scan_scalp', scalpOn ? '1' : '0'); localStorage.setItem('sr_scan_swing', swingOn ? '1' : '0'); } catch(e) {}
-    clearInterval(scanCdTimer);
-    runScan();
-    startScanCountdown();
+    if (scalpOn) { runScanMode('scalp'); startCountdown('scalp'); }
+    else { clearInterval(scanCdTimerScalp); ALL_PAIRS.forEach(p => setPairStatus(p, 'scalp', '—', '')); }
+    if (swingOn) { runScanMode('swing'); startCountdown('swing'); }
+    else { clearInterval(scanCdTimerSwing); ALL_PAIRS.forEach(p => setPairStatus(p, 'swing', '—', '')); }
   } else {
     card.style.display = 'none';
-    clearInterval(scanCdTimer);
+    clearInterval(scanCdTimerScalp); clearInterval(scanCdTimerSwing);
     ALL_PAIRS.forEach(p => { setPairStatus(p, 'scalp', '—', ''); setPairStatus(p, 'swing', '—', ''); });
+    updateScanProgress();
   }
 }
 
-function startScanCountdown() {
-  clearInterval(scanCdTimer);
-  scanCdVal = SCAN_INTERVAL / 1000;
-  scanCdTimer = setInterval(() => {
-    scanCdVal--;
-    const m = Math.floor(scanCdVal / 60), s = scanCdVal % 60;
-    const el = document.getElementById('scanCdTxt');
-    if (el) el.textContent = m + 'min ' + String(s).padStart(2,'0') + 's';
-    if (scanCdVal <= 0) { clearInterval(scanCdTimer); runScan(); startScanCountdown(); }
-  }, 1000);
+function startCountdown(modeKey) {
+  if (modeKey === 'scalp') {
+    clearInterval(scanCdTimerScalp);
+    scanCdScalp = SCAN_INTERVAL_SCALP / 1000;
+    scanCdTimerScalp = setInterval(() => {
+      scanCdScalp--;
+      updateScanProgress();
+      if (scanCdScalp <= 0) {
+        clearInterval(scanCdTimerScalp);
+        if (document.getElementById('alertToggleScalp').checked) { runScanMode('scalp'); startCountdown('scalp'); }
+      }
+    }, 1000);
+  } else {
+    clearInterval(scanCdTimerSwing);
+    scanCdSwing = SCAN_INTERVAL_SWING / 1000;
+    scanCdTimerSwing = setInterval(() => {
+      scanCdSwing--;
+      updateScanProgress();
+      if (scanCdSwing <= 0) {
+        clearInterval(scanCdTimerSwing);
+        if (document.getElementById('alertToggleSwing').checked) { runScanMode('swing'); startCountdown('swing'); }
+      }
+    }, 1000);
+  }
+}
+
+function updateScanProgress() {
+  const scalpOn = document.getElementById('alertToggleScalp') && document.getElementById('alertToggleScalp').checked;
+  const swingOn = document.getElementById('alertToggleSwing') && document.getElementById('alertToggleSwing').checked;
+  const parts = [];
+  if (scalpOn) parts.push('⚡ ' + scanCdScalp + 's');
+  if (swingOn) { const m = Math.floor(scanCdSwing/60), s = scanCdSwing%60; parts.push('📈 ' + m + 'min ' + String(s).padStart(2,'0') + 's'); }
+  const el = document.getElementById('scanCdTxt');
+  if (el) el.textContent = parts.length ? parts.join(' · ') : '—';
 }
 
 function setPairStatus(pair, modeKey, text, cssClass) {
@@ -1275,31 +1302,27 @@ async function scanPairForMode(pair, modeKey) {
   }
 }
 
-async function runScan() {
-  if (!scannerActive) return;
+async function runScanMode(modeKey) {
+  if (modeKey === 'scalp' && scanningScalp) return;
+  if (modeKey === 'swing' && scanningSwing) return;
+  if (modeKey === 'scalp') scanningScalp = true;
+  if (modeKey === 'swing') scanningSwing = true;
+
+  const modeEl = document.getElementById('scanModeTxt');
   const scalpOn = document.getElementById('alertToggleScalp').checked;
   const swingOn = document.getElementById('alertToggleSwing').checked;
-  const fillEl = document.getElementById('scanBarFill');
-  if (fillEl) fillEl.style.width = '0%';
-  const modes = [];
-  if (scalpOn) modes.push('scalp');
-  if (swingOn) modes.push('swing');
-  const txt = modes.map(m => m === 'scalp' ? '⚡ Scalp' : '📈 Swing').join(' + ');
-  const modeEl = document.getElementById('scanModeTxt');
-  if (modeEl) modeEl.textContent = 'SCAN ' + txt.toUpperCase();
+  const activeLabel = [scalpOn ? '⚡ Scalp' : null, swingOn ? '📈 Swing' : null].filter(Boolean).join(' + ');
+  if (modeEl) modeEl.textContent = 'SCAN ' + activeLabel.toUpperCase();
+
   for (let i = 0; i < ALL_PAIRS.length; i++) {
-    if (!scannerActive) break;
-    const pct = Math.round(((i + 1) / ALL_PAIRS.length) * 100);
-    if (fillEl) fillEl.style.width = pct + '%';
-    const ptEl = document.getElementById('scanProgressTxt');
-    if (ptEl) ptEl.textContent = (i + 1) + ' / ' + ALL_PAIRS.length + ' paires';
-    // Scanne les modes activés en parallèle pour cette paire
-    await Promise.all(modes.map(m => scanPairForMode(ALL_PAIRS[i], m)));
-    await new Promise(r => setTimeout(r, 500));
+    if (modeKey === 'scalp' && !document.getElementById('alertToggleScalp').checked) break;
+    if (modeKey === 'swing' && !document.getElementById('alertToggleSwing').checked) break;
+    await scanPairForMode(ALL_PAIRS[i], modeKey);
+    await new Promise(r => setTimeout(r, 400));
   }
-  if (fillEl) fillEl.style.width = '100%';
-  const ptEl = document.getElementById('scanProgressTxt');
-  if (ptEl) ptEl.textContent = 'Scan terminé · ' + ALL_PAIRS.length + ' paires';
+
+  if (modeKey === 'scalp') scanningScalp = false;
+  if (modeKey === 'swing') scanningSwing = false;
 }
 
 function sendNotification(pair, dir, price, conf, modeKey) {
@@ -1363,12 +1386,15 @@ else { updateNotifStatus('unsupported'); }
 
 // Restaure les préfs scanner
 try {
-  if (localStorage.getItem('sr_scan_scalp') === '1') { document.getElementById('alertToggleScalp').checked = true; document.getElementById('toggleLblScalp').textContent = 'On'; }
-  if (localStorage.getItem('sr_scan_swing') === '1') { document.getElementById('alertToggleSwing').checked = true; document.getElementById('toggleLblSwing').textContent = 'On'; }
-  if (localStorage.getItem('sr_scan_scalp') === '1' || localStorage.getItem('sr_scan_swing') === '1') {
+  const ss = localStorage.getItem('sr_scan_scalp') === '1';
+  const sw = localStorage.getItem('sr_scan_swing') === '1';
+  if (ss) { document.getElementById('alertToggleScalp').checked = true; document.getElementById('toggleLblScalp').textContent = 'On'; }
+  if (sw) { document.getElementById('alertToggleSwing').checked = true; document.getElementById('toggleLblSwing').textContent = 'On'; }
+  if (ss || sw) {
     scannerActive = true;
     document.getElementById('scanProgressCard').style.display = 'block';
-    runScan(); startScanCountdown();
+    if (ss) { runScanMode('scalp'); startCountdown('scalp'); }
+    if (sw) { runScanMode('swing'); startCountdown('swing'); }
   }
 } catch(e) {}
 
