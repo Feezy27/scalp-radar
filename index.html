@@ -304,7 +304,14 @@ footer{padding:.65rem 1.25rem;border-top:1px solid var(--border);font-size:11px;
       <option value="SUIUSDT">SUI/USDT</option>
     </select>
     <select id="risk"><option value="1">Risque 1%</option><option value="2" selected>Risque 2%</option><option value="3">Risque 3%</option><option value="5">Risque 5%</option></select>
-    <input type="number" id="capital" value="30" min="1" placeholder="Capital €">
+    <input type="number" id="capital" value="30" min="1" placeholder="Capital €" title="Capital total">
+    <select id="tradeAlloc" title="Part du capital par trade">
+      <option value="100">100% / trade</option>
+      <option value="50">50% / trade</option>
+      <option value="33" selected>33% / trade</option>
+      <option value="25">25% / trade</option>
+      <option value="20">20% / trade</option>
+    </select>
     <button class="btn" onclick="manualAnalyze()">↻</button>
     <div class="cd-wrap">
       <span><span id="cdNum">30</span>s</span>
@@ -751,8 +758,10 @@ async function fetchKlines(pair, tf, source) {
 async function analyze() {
   if (locked && !activeTrade) return;
   const pair=document.getElementById('pair').value;
-  const riskPct=parseFloat(document.getElementById('risk').value);
-  const capital=parseFloat(document.getElementById('capital').value)||30;
+  const riskPct = parseFloat(document.getElementById('risk').value);
+  const totalCapital = parseFloat(document.getElementById('capital').value) || 30;
+  const alloc = parseFloat(document.getElementById('tradeAlloc').value) / 100;
+  const capital = totalCapital * alloc;
   const source=document.getElementById('source').value;
   const cfg=MODES[mode];
   const sigCard=document.getElementById('sigCard');
@@ -868,7 +877,8 @@ async function analyze() {
         document.getElementById('capPos').textContent=simM.pos.toFixed(0)+'€';
         document.getElementById('capGain').textContent='+'+simM.gain.toFixed(2)+'€';
         document.getElementById('capLoss').textContent='-'+simM.loss.toFixed(2)+'€';
-        document.getElementById('capNote').textContent='Levier modéré ×'+lev.mod+' sur '+capital+'€';
+        const allocPct = parseFloat(document.getElementById('tradeAlloc').value);
+        document.getElementById('capNote').textContent='Levier ×'+lev.mod+' · '+allocPct+'% de '+totalCapital+'€ = '+capital.toFixed(0)+'€ par trade';
 
         // Mémorise pour prise du trade
         currentSignal={direction:isLong?'LONG':'SHORT',pair,mode,entry:price,tp,sl,atr,lev,capital,riskPct,conf};
@@ -878,8 +888,8 @@ async function analyze() {
         blw.style.display = 'block';
         document.getElementById('begTP').textContent = fmt(tp);
         document.getElementById('begSL').textContent = fmt(sl);
-        document.getElementById('begTPpct').textContent = 'Gain visé : ' + fmtPct(tpP);
-        document.getElementById('begSLpct').textContent = 'Perte max : ' + fmtPct(Math.abs(slP));
+        document.getElementById('begTPpct').textContent = 'Gain visé : ' + fmtPct(tpP) + ' · +' + (capital * lev.mod * Math.abs(tpP) / 100).toFixed(2) + '€';
+        document.getElementById('begSLpct').textContent = 'Perte max : ' + fmtPct(Math.abs(slP)) + ' · -' + (capital * lev.mod * Math.abs(slP) / 100).toFixed(2) + '€';
       } else {
         document.getElementById('levelsWrap').style.display = 'none';
         document.getElementById('begLevelsWrap').style.display = 'none';
@@ -1334,6 +1344,7 @@ document.getElementById('pair').onchange = function() {
 };
 document.getElementById('risk').onchange = () => { if(!locked) analyze(); };
 document.getElementById('capital').oninput = () => { if(!locked) analyze(); };
+document.getElementById('tradeAlloc').onchange = () => { if(!locked) analyze(); };
 document.getElementById('source').onchange = manualAnalyze;
 
 // Restaure trade actif si page rechargée
