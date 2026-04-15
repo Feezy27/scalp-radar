@@ -178,6 +178,38 @@ main{flex:1;padding:1rem 1.5rem;display:flex;flex-direction:column;gap:12px;}
 .param-opt{background:var(--bg);color:var(--muted);border:1px solid var(--border2);border-radius:6px;padding:8px 18px;font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.04em;}
 .param-opt:hover{border-color:var(--green);color:var(--text);}
 .param-opt.active{border-color:var(--green);background:var(--green-dim);color:var(--green);box-shadow:0 0 8px var(--green-glow);}
+
+/* ── CARTE ALERTE RICHE ── */
+.alert-card{border-radius:8px;border:1px solid var(--border);background:var(--surface);margin-bottom:10px;overflow:hidden;}
+.alert-card:last-child{margin-bottom:0;}
+.alert-card-header{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;border-bottom:1px solid var(--border);}
+.alert-card-dir{font-size:15px;font-weight:700;letter-spacing:.06em;font-family:'Syne',sans-serif;}
+.alert-card-meta{font-size:11px;color:var(--muted);}
+.alert-card-body{padding:.9rem 1rem;}
+.alert-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+.alert-cell{text-align:center;background:var(--bg);border-radius:6px;padding:.6rem .4rem;border:1px solid var(--border);}
+.alert-cell-lbl{font-size:10px;color:var(--muted);letter-spacing:.1em;margin-bottom:4px;}
+.alert-cell-val{font-size:15px;font-weight:700;}
+.alert-invest-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.alert-invest-cell{text-align:center;border-radius:6px;padding:.6rem .4rem;}
+.alert-invest-cell.gain{background:var(--green-dim);border:1px solid rgba(0,255,136,.25);}
+.alert-invest-cell.loss{background:var(--red-dim);border:1px solid rgba(255,51,85,.25);}
+.alert-invest-lbl{font-size:10px;letter-spacing:.1em;margin-bottom:4px;}
+.alert-invest-cell.gain .alert-invest-lbl{color:var(--green);}
+.alert-invest-cell.loss .alert-invest-lbl{color:var(--red);}
+.alert-invest-val{font-size:17px;font-weight:700;}
+.alert-invest-cell.gain .alert-invest-val{color:var(--green);text-shadow:0 0 6px var(--green-glow);}
+.alert-invest-cell.loss .alert-invest-val{color:var(--red);text-shadow:0 0 6px var(--red-glow);}
+.alert-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.alert-btn-take{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,255,136,.4);border-radius:6px;padding:.65rem;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.04em;}
+.alert-btn-take:hover{background:var(--green);color:#000;box-shadow:0 0 12px var(--green);}
+.alert-btn-leave{background:var(--border2);color:var(--muted);border:1px solid var(--border2);border-radius:6px;padding:.65rem;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.04em;}
+.alert-btn-leave:hover{border-color:var(--red);color:var(--red);}
+.alert-taken-badge{text-align:center;padding:.5rem;border-radius:6px;font-size:12px;font-weight:600;letter-spacing:.06em;}
+.alert-taken-badge.active-trade{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(255,170,0,.3);}
+.alert-taken-badge.won{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,255,136,.3);}
+.alert-taken-badge.lost{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,51,85,.3);}
+.alert-taken-badge.passed{background:var(--border2);color:var(--muted);}
 .ui-switch{display:flex;background:var(--bg);border:1px solid var(--border2);border-radius:20px;overflow:hidden;cursor:pointer;}
 .ui-switch-opt{padding:5px 14px;font-size:12px;font-weight:600;color:var(--muted);transition:all .2s;border-radius:20px;letter-spacing:.06em;}
 .ui-switch-opt.active{background:var(--green);color:#000;font-weight:700;}
@@ -1083,32 +1115,42 @@ function updateActivePnl() {
   const pnlEl = document.getElementById('atPnlLive');
   pnlEl.textContent = fmtEur(pnl) + ' (' + fmtPct(priceDiff*100) + ')';
   pnlEl.style.color = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+  // Auto-clôture si TP ou SL atteint
+  const tpHit = activeTrade.direction === 'LONG' ? currentPrice >= activeTrade.tp : currentPrice <= activeTrade.tp;
+  const slHit = activeTrade.direction === 'LONG' ? currentPrice <= activeTrade.sl : currentPrice >= activeTrade.sl;
+  if (tpHit || slHit) autoCloseTrade(tpHit ? 'TP touché ✓' : 'SL touché ✗');
 }
 
 // ── CLÔTURER TRADE ──
-function closeTrade() {
+function finalizeTrade(exitPrice, outcome) {
   if (!activeTrade) return;
-  const exitPrice = currentPrice;
   const priceDiff = activeTrade.direction === 'LONG'
     ? (exitPrice - activeTrade.entry) / activeTrade.entry
     : (activeTrade.entry - exitPrice) / activeTrade.entry;
   const pnl = activeTrade.position * priceDiff;
   const isWin = pnl > 0;
   const duration = Date.now() - activeTrade.entryTime;
-  const tpHit = activeTrade.direction === 'LONG' ? exitPrice >= activeTrade.tp : exitPrice <= activeTrade.tp;
-  const slHit = activeTrade.direction === 'LONG' ? exitPrice <= activeTrade.sl : exitPrice >= activeTrade.sl;
-  const outcome = tpHit ? 'TP touché' : slHit ? 'SL touché' : 'Clôture manuelle';
 
-  const trade = {
-    ...activeTrade,
-    exitPrice, pnl, isWin, duration, outcome,
-    exitTime: Date.now(),
-    priceDiffPct: priceDiff * 100
-  };
-
+  // Archive dans le journal
+  const trade = { ...activeTrade, exitPrice, pnl, isWin, duration, outcome, exitTime: Date.now(), priceDiffPct: priceDiff * 100 };
   const trades = loadTrades();
   trades.unshift(trade);
   saveTrades(trades);
+
+  // Mise à jour BK automatique
+  settings.capital = Math.max(0, parseFloat((settings.capital + pnl).toFixed(2)));
+  try { localStorage.setItem('sr_settings', JSON.stringify(settings)); } catch(e) {}
+  updateDisplaySettings();
+
+  // Marque l'alerte source comme clôturée
+  if (activeTrade.alertId !== undefined) {
+    const idx = alertHistory.findIndex(a => a.id === activeTrade.alertId);
+    if (idx !== -1) {
+      alertHistory[idx].takenStatus = isWin ? 'won' : 'lost';
+      alertHistory[idx].pnl = pnl;
+      saveAlertHistory();
+    }
+  }
 
   activeTrade = null;
   saveActive(null);
@@ -1117,20 +1159,66 @@ function closeTrade() {
 
   document.getElementById('activeTradeWrap').style.display = 'none';
   document.getElementById('levelsWrap').style.display = 'none';
+  document.getElementById('begLevelsWrap').style.display = 'none';
   document.getElementById('durationCard').style.display = 'none';
 
-  // Feedback visuel
   const sigCard = document.getElementById('sigCard');
   sigCard.className = 'signal-card ' + (isWin ? 'long' : 'short');
   document.getElementById('sigArrow').textContent = isWin ? '✓' : '✗';
   document.getElementById('sigWord').textContent = isWin ? 'GAGNÉ' : 'PERDU';
-  document.getElementById('sigSub').textContent = fmtEur(pnl) + ' · ' + outcome + ' · ' + fmtDur(duration);
+  document.getElementById('sigSub').textContent = fmtEur(pnl) + ' · ' + outcome + ' · BK : ' + settings.capital.toFixed(2) + '€';
   document.getElementById('lockBadge').style.display = 'none';
 
-  setTimeout(() => {
-    locked = false;
-    manualAnalyze();
-  }, 3000);
+  // Notif de résultat
+  if (Notification.permission === 'granted') {
+    new Notification('ScalpRadar — Trade ' + (isWin ? 'GAGNÉ ✓' : 'PERDU ✗'), {
+      body: (isWin ? '+' : '') + pnl.toFixed(2) + '€ · ' + outcome + '\nNouvelle BK : ' + settings.capital.toFixed(2) + '€',
+      tag: 'trade-result'
+    });
+  }
+
+  setTimeout(() => { locked = false; manualAnalyze(); }, 3000);
+}
+
+function autoCloseTrade(outcome) { finalizeTrade(currentPrice, outcome); }
+function closeTrade() { finalizeTrade(currentPrice, 'Clôture manuelle'); }
+
+// ── PRENDRE UN TRADE DEPUIS UNE ALERTE ──
+function takeFromAlert(alertId) {
+  if (activeTrade) { alert('Tu as déjà un trade en cours. Clôture-le avant d\'en ouvrir un nouveau.'); return; }
+  const alert = alertHistory.find(a => a.id === alertId);
+  if (!alert) return;
+  const tradeCapital = settings.capital * settings.alloc / 100;
+  const lev = Math.max(1, Math.min(10, Math.floor(settings.risk / ((Math.abs(alert.tp - alert.price) / alert.price * 100) * 0.6))));
+  activeTrade = {
+    direction: alert.dir,
+    pair: alert.pair + 'USDT',
+    mode: alert.modeKey,
+    entry: alert.price,
+    tp: alert.tp,
+    sl: alert.sl,
+    lev: lev,
+    position: tradeCapital * lev,
+    capital: tradeCapital,
+    riskPct: settings.risk,
+    conf: alert.conf,
+    entryTime: Date.now(),
+    id: Date.now(),
+    alertId: alertId
+  };
+  // Marque l'alerte comme prise
+  const idx = alertHistory.findIndex(a => a.id === alertId);
+  if (idx !== -1) { alertHistory[idx].takenStatus = 'active'; saveAlertHistory(); }
+  saveActive(activeTrade);
+  locked = true;
+  renderActiveTrade();
+  renderAlertHistory();
+  showPage('analyse');
+}
+
+function leaveAlert(alertId) {
+  const idx = alertHistory.findIndex(a => a.id === alertId);
+  if (idx !== -1) { alertHistory[idx].takenStatus = 'passed'; saveAlertHistory(); renderAlertHistory(); }
 }
 
 // ── UNLOCK ──
@@ -1397,7 +1485,7 @@ async function scanPairForMode(pair, modeKey) {
       const sl = isLong ? price - atr * cfg.atrSL : price + atr * cfg.atrSL;
       setPairStatus(pair, modeKey, dir + ' ' + conf + '%', isLong ? 'alert-long' : 'alert-short');
       sendNotification(shortPair, dir, price, conf, modeKey, tp, sl);
-      alertHistory.unshift({ pair: shortPair, dir, price, conf, modeKey, tp, sl, time: Date.now() });
+      alertHistory.unshift({ id: Date.now(), pair: shortPair, dir, price, conf, modeKey, tp, sl, time: Date.now(), takenStatus: null });
       saveAlertHistory();
       renderAlertHistory();
     } else if (isLong || isShort) {
@@ -1440,12 +1528,16 @@ function sendNotification(pair, dir, price, conf, modeKey, tp, sl) {
   const heure = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
   const tpPct = ((tp - price) / price * 100).toFixed(2);
   const slPct = ((sl - price) / price * 100).toFixed(2);
+  const tradeAmt = (settings.capital * settings.alloc / 100).toFixed(0);
+  const gainPot = (parseFloat(tradeAmt) * Math.abs(tpPct) / 100).toFixed(2);
+  const lossMax = (parseFloat(tradeAmt) * Math.abs(slPct) / 100).toFixed(2);
   const n = new Notification('ScalpRadar — ' + modeLabel + ' ' + dir + ' ' + arrow + ' ' + pair, {
-    body: pair + '/USDT · Entrée : ' + fmt(price) + ' · ' + heure
-      + '\nTP : ' + fmt(tp) + ' (' + (tpPct > 0 ? '+' : '') + tpPct + '%)'
-      + '  ·  SL : ' + fmt(sl) + ' (' + (slPct > 0 ? '+' : '') + slPct + '%)'
-      + '\n' + modeLabel + ' · Confiance ' + conf + '%',
-    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="%230a0c0f" rx="12"/><text y="44" x="8" font-size="40" fill="%2300e676">S</text></svg>',
+    body: pair + '/USDT · ' + heure + ' · Confiance ' + conf + '%'
+      + '\nEntrée : ' + fmt(price)
+      + '\nTP : ' + fmt(tp) + ' (' + (tpPct > 0 ? '+' : '') + tpPct + '%) → +' + gainPot + '€'
+      + '\nSL : ' + fmt(sl) + ' (' + slPct + '%) → -' + lossMax + '€'
+      + '\nInvestir : ' + tradeAmt + '€ (' + settings.alloc + '% BK)',
+    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="%23050709" rx="12"/><text y="44" x="8" font-size="40" fill="%2300ff88">S</text></svg>',
     tag: 'scalp-' + modeKey + '-' + pair,
     requireInteraction: true
   });
@@ -1454,8 +1546,7 @@ function sendNotification(pair, dir, price, conf, modeKey, tp, sl) {
     const pairSelect = document.getElementById('pair');
     if (pairSelect) pairSelect.value = pair + 'USDT';
     if (modeKey !== mode) setMode(modeKey);
-    showPage('analyse');
-    manualAnalyze();
+    showPage('alertes');
     n.close();
   };
 }
@@ -1467,20 +1558,61 @@ function renderAlertHistory() {
     el.innerHTML = '<div class="empty-state" style="padding:1rem 0;">Aucune alerte déclenchée.</div>';
     return;
   }
-  el.innerHTML = alertHistory.slice(0, 20).map(a => {
-    const d = new Date(a.time).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
-    const date = new Date(a.time).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'});
-    const col = a.dir === 'LONG' ? 'var(--green)' : 'var(--red)';
-    const modeLabel = a.modeKey === 'scalp' ? '⚡' : '📈';
-    const tpStr = a.tp ? ' · TP ' + fmt(a.tp) : '';
-    const slStr = a.sl ? ' · SL ' + fmt(a.sl) : '';
-    return '<div class="alert-item">' +
-      '<div class="alert-item-left">' +
-        '<div style="color:' + col + '">' + modeLabel + ' ' + (a.dir === 'LONG' ? '↑' : '↓') + ' ' + a.pair + ' — ' + a.dir + ' · ' + a.conf + '%</div>' +
-        '<div style="font-size:10px;font-family:\'IBM Plex Mono\',monospace;color:var(--muted);margin-top:2px;">Entrée ' + fmt(a.price) + tpStr + slStr + '</div>' +
-      '</div>' +
-      '<div class="alert-item-right">' + date + ' ' + d + '</div>' +
-      '</div>';
+  el.innerHTML = alertHistory.slice(0, 15).map(a => {
+    const heure = new Date(a.time).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+    const date  = new Date(a.time).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'});
+    const isLong = a.dir === 'LONG';
+    const dirColor = isLong ? 'var(--green)' : 'var(--red)';
+    const dirGlow  = isLong ? 'var(--green-glow)' : 'var(--red-glow)';
+    const arrow = isLong ? '↑' : '↓';
+    const modeLabel = a.modeKey === 'scalp' ? '⚡ Scalp' : '📈 Swing';
+    const tpPct = a.tp ? ((a.tp - a.price) / a.price * 100) : 0;
+    const slPct = a.sl ? ((a.sl - a.price) / a.price * 100) : 0;
+    const tradeAmt = (settings.capital * settings.alloc / 100);
+    const gainPot  = a.tp ? (tradeAmt * Math.abs(tpPct) / 100).toFixed(2) : '—';
+    const lossMax  = a.sl ? (tradeAmt * Math.abs(slPct) / 100).toFixed(2) : '—';
+    const ageMs = Date.now() - a.time;
+    const isRecent = ageMs < 15 * 60 * 1000; // moins de 15 min
+
+    // Boutons ou badge selon statut
+    let actionHtml = '';
+    if (!a.takenStatus && isRecent) {
+      actionHtml = '<div class="alert-btns">'
+        + '<button class="alert-btn-take" onclick="takeFromAlert(' + a.id + ')">✓ Prendre</button>'
+        + '<button class="alert-btn-leave" onclick="leaveAlert(' + a.id + ')">✕ Laisser</button>'
+        + '</div>';
+    } else if (a.takenStatus === 'active') {
+      actionHtml = '<div class="alert-taken-badge active-trade">⏳ Trade en cours — voir onglet Analyse</div>';
+    } else if (a.takenStatus === 'won') {
+      actionHtml = '<div class="alert-taken-badge won">✓ Trade gagné' + (a.pnl ? ' · +' + a.pnl.toFixed(2) + '€' : '') + '</div>';
+    } else if (a.takenStatus === 'lost') {
+      actionHtml = '<div class="alert-taken-badge lost">✗ Trade perdu' + (a.pnl ? ' · ' + a.pnl.toFixed(2) + '€' : '') + '</div>';
+    } else if (a.takenStatus === 'passed') {
+      actionHtml = '<div class="alert-taken-badge passed">— Laissé passer</div>';
+    } else {
+      // Alerte expirée, pas d'action
+      actionHtml = '<div class="alert-taken-badge passed">Signal expiré</div>';
+    }
+
+    return '<div class="alert-card">'
+      + '<div class="alert-card-header" style="background:' + (isLong ? 'var(--green-dim)' : 'var(--red-dim)') + ';border-bottom-color:' + dirColor + '33;">'
+        + '<div class="alert-card-dir" style="color:' + dirColor + ';text-shadow:0 0 8px ' + dirGlow + ';">' + arrow + ' ' + a.dir + ' · ' + a.pair + '/USDT</div>'
+        + '<div class="alert-card-meta">' + modeLabel + ' · ' + a.conf + '% · ' + date + ' ' + heure + '</div>'
+      + '</div>'
+      + '<div class="alert-card-body">'
+        + '<div class="alert-row">'
+          + '<div class="alert-cell"><div class="alert-cell-lbl">ENTRÉE</div><div class="alert-cell-val" style="color:var(--text);">' + fmt(a.price) + '</div></div>'
+          + '<div class="alert-cell" style="border-color:rgba(0,255,136,.25);"><div class="alert-cell-lbl" style="color:var(--green);">TAKE PROFIT</div><div class="alert-cell-val" style="color:var(--green);text-shadow:0 0 6px var(--green-glow);">' + (a.tp ? fmt(a.tp) : '—') + '</div></div>'
+          + '<div class="alert-cell" style="border-color:rgba(255,51,85,.25);"><div class="alert-cell-lbl" style="color:var(--red);">STOP LOSS</div><div class="alert-cell-val" style="color:var(--red);text-shadow:0 0 6px var(--red-glow);">' + (a.sl ? fmt(a.sl) : '—') + '</div></div>'
+        + '</div>'
+        + '<div class="alert-invest-row">'
+          + '<div class="alert-invest-cell gain"><div class="alert-invest-lbl">GAIN POTENTIEL (' + settings.alloc + '% BK)</div><div class="alert-invest-val">+' + gainPot + '€</div></div>'
+          + '<div class="alert-invest-cell loss"><div class="alert-invest-lbl">PERTE MAX (SL)</div><div class="alert-invest-val">−' + lossMax + '€</div></div>'
+        + '</div>'
+        + '<div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:8px;">Mise : <strong style="color:var(--text);">' + tradeAmt.toFixed(0) + '€</strong> · BK actuelle : <strong style="color:var(--amber);">' + settings.capital + '€</strong></div>'
+        + actionHtml
+      + '</div>'
+    + '</div>';
   }).join('');
 }
 
