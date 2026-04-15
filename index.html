@@ -938,6 +938,11 @@ async function analyze() {
     const price=dE.closes[dE.closes.length-1];
     const prev=dE.closes[dE.closes.length-2];
     currentPrice = price;
+    // Marque le prix comme chargé pour l'auto-clôture (évite les faux triggers au démarrage)
+    if (activeTrade && !activeTrade.priceReadyAt) {
+      activeTrade.priceReadyAt = Date.now();
+      saveActive(activeTrade);
+    }
     const chgPct=((price-prev)/prev)*100;
     const atr=calcATR(dE.highs,dE.lows,dE.closes,14);
 
@@ -1114,6 +1119,12 @@ function renderActiveTrade() {
 
 function updateActivePnl() {
   if (!activeTrade) return;
+  // Ne pas calculer si le prix courant n'est pas encore chargé pour cette paire
+  if (!currentPrice || currentPrice <= 0) {
+    document.getElementById('atPnlLive').textContent = 'Chargement du prix...';
+    document.getElementById('atPnlLive').style.color = 'var(--muted)';
+    return;
+  }
   const elapsed = Date.now() - activeTrade.entryTime;
   document.getElementById('atDur').textContent = fmtDur(elapsed);
   const priceDiff = activeTrade.direction === 'LONG'
@@ -1123,7 +1134,8 @@ function updateActivePnl() {
   const pnlEl = document.getElementById('atPnlLive');
   pnlEl.textContent = fmtEur(pnl) + ' (' + fmtPct(priceDiff*100) + ')';
   pnlEl.style.color = pnl >= 0 ? 'var(--green)' : 'var(--red)';
-  // Auto-clôture si TP ou SL atteint
+  // Auto-clôture si TP ou SL atteint — uniquement si le prix est frais (chargé depuis moins de 2 min)
+  if (!activeTrade.priceReadyAt || (Date.now() - activeTrade.priceReadyAt) < 500) return;
   const tpHit = activeTrade.direction === 'LONG' ? currentPrice >= activeTrade.tp : currentPrice <= activeTrade.tp;
   const slHit = activeTrade.direction === 'LONG' ? currentPrice <= activeTrade.sl : currentPrice >= activeTrade.sl;
   if (tpHit || slHit) autoCloseTrade(tpHit ? 'TP touché ✓' : 'SL touché ✗');
@@ -1192,38 +1204,62 @@ function autoCloseTrade(outcome) { finalizeTrade(currentPrice, outcome); }
 function closeTrade() { finalizeTrade(currentPrice, 'Clôture manuelle'); }
 
 // ── PRENDRE UN TRADE DEPUIS UNE ALERTE ──
-function takeFromAlert(alertId) {
+async function takeFromAlert(alertId) {
   if (activeTrade) { alert('Tu as déjà un trade en cours. Clôture-le avant d\'en ouvrir un nouveau.'); return; }
-  const alert = alertHistory.find(a => a.id === alertId);
-  if (!alert) return;
+  const a = alertHistory.find(x => x.id === alertId);
+  if (!a) return;
+
+  // Vérifie que les paramètres sont bien chargés
+  if (!settings.capital || settings.capital <= 0) {
+    alert('Configure ta bankroll dans l\'onglet Paramètres avant de prendre un trade.');
+    showPage('params');
+    return;
+  }
+
   const tradeCapital = settings.capital * settings.alloc / 100;
-  const slDist = Math.abs((alert.sl - alert.price) / alert.price * 100);
-  const targetLoss = tradeCapital * settings.risk / 100; // risque% de la MISE
+  if (!tradeCapital || tradeCapital <= 0) {
+    alert('Vérifie tes paramètres : capital ou % par trade invalide.'); return;
+  }
+
+  const slDist = a.sl > 0 ? Math.abs((a.sl - a.price) / a.price * 100) : 0;
+  const targetLoss = tradeCapital * settings.risk / 100;
   const lev = slDist > 0 ? Math.max(1, Math.min(20, Math.round(targetLoss / (tradeCapital * slDist / 100)))) : 1;
+
   activeTrade = {
-    direction: alert.dir,
-    pair: alert.pair + 'USDT',
-    mode: alert.modeKey,
-    entry: alert.price,
-    tp: alert.tp,
-    sl: alert.sl,
+    direction: a.dir,
+    pair: a.pair + 'USDT',
+    mode: a.modeKey,
+    entry: a.price,
+    tp: a.tp,
+    sl: a.sl,
     lev: lev,
     position: tradeCapital * lev,
     capital: tradeCapital,
     riskPct: settings.risk,
-    conf: alert.conf,
+    conf: a.conf,
     entryTime: Date.now(),
     id: Date.now(),
-    alertId: alertId
+    alertId: alertId,
+    priceReadyAt: null // sera défini au premier fetch de prix
   };
+
+  // Sélectionne la bonne paire pour que analyze() charge le bon prix
+  const pairSelect = document.getElementById('pair');
+  if (pairSelect) pairSelect.value = a.pair + 'USDT';
+  if (a.modeKey !== mode) setMode(a.modeKey);
+
   // Marque l'alerte comme prise
-  const idx = alertHistory.findIndex(a => a.id === alertId);
+  const idx = alertHistory.findIndex(x => x.id === alertId);
   if (idx !== -1) { alertHistory[idx].takenStatus = 'active'; saveAlertHistory(); }
+
   saveActive(activeTrade);
   locked = true;
   renderActiveTrade();
   renderAlertHistory();
   showPage('analyse');
+  // Lance immédiatement une analyse pour charger le prix réel
+  await analyze();
+  startTimer();
 }
 
 function leaveAlert(alertId) {
@@ -1644,7 +1680,11 @@ updateDisplaySettings();
 
 // Restaure trade actif si page rechargée
 activeTrade = loadActive();
-if (activeTrade) { locked = true; renderActiveTrade(); }
+if (activeTrade) {
+  activeTrade.priceReadyAt = null; // reset pour éviter auto-close immédiat au rechargement
+  locked = true;
+  renderActiveTrade();
+}
 
 // Restaure mode UI
 try {
