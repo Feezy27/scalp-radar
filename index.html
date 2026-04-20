@@ -344,7 +344,10 @@ footer{padding:.8rem 1.5rem;border-top:1px solid var(--border);font-size:12px;co
           <div class="at-pnl-lbl">P&L EN TEMPS RÉEL</div>
           <div class="at-pnl-val" id="atPnlLive">—</div>
         </div>
-        <button class="close-btn" onclick="closeTrade()">Clôturer ce trade au prix actuel</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button id="openBingxBtn" class="close-btn" onclick="takeAndOpenBingX()" style="border-color:rgba(0,170,255,.4);color:var(--blue);">↗ Ouvrir BingX + copier</button>
+          <button class="close-btn" onclick="closeTrade()">✕ Clôturer maintenant</button>
+        </div>
       </div>
     </div>
 
@@ -1202,6 +1205,41 @@ function finalizeTrade(exitPrice, outcome) {
 function autoCloseTrade(outcome) { finalizeTrade(currentPrice, outcome); }
 function closeTrade() { finalizeTrade(currentPrice, 'Clôture manuelle'); }
 
+// ── OUVRIR BINGX SUR LA BONNE PAIRE ──
+function openBingX(pair) {
+  // pair au format "BTCUSDT" ou "BTC" — on extrait le symbole
+  const sym = pair.replace('USDT', '');
+  const url = 'https://bingx.com/en/perpetual/' + sym + '-USDT/';
+  window.open(url, '_blank');
+}
+
+// Copie un résumé du trade dans le presse-papier
+function copyTradeToClipboard(t) {
+  const dirLabel = t.direction === 'LONG' ? '↑ LONG' : '↓ SHORT';
+  const text = `${t.pair.replace('USDT','')}/USDT · ${dirLabel}
+Levier : ×${t.lev}
+Mise : ${t.capital.toFixed(2)}€
+TP : ${t.tp}
+SL : ${t.sl}`;
+  try {
+    navigator.clipboard.writeText(text);
+    return true;
+  } catch(e) { return false; }
+}
+
+function takeAndOpenBingX() {
+  if (!activeTrade) return;
+  copyTradeToClipboard(activeTrade);
+  openBingX(activeTrade.pair);
+  // Feedback visuel sur le bouton
+  const btn = document.getElementById('openBingxBtn');
+  if (btn) {
+    const original = btn.innerHTML;
+    btn.innerHTML = '✓ Copié & BingX ouvert';
+    setTimeout(() => { btn.innerHTML = original; }, 2000);
+  }
+}
+
 // ── PRENDRE UN TRADE DEPUIS UNE ALERTE ──
 async function takeFromAlert(alertId) {
   if (activeTrade) { alert('Tu as déjà un trade en cours. Clôture-le avant d\'en ouvrir un nouveau.'); return; }
@@ -1256,6 +1294,11 @@ async function takeFromAlert(alertId) {
   renderActiveTrade();
   renderAlertHistory();
   showPage('analyse');
+
+  // Copie les valeurs dans le presse-papier + ouvre BingX sur la bonne paire
+  copyTradeToClipboard(activeTrade);
+  openBingX(a.pair);
+
   // Lance immédiatement une analyse pour charger le prix réel
   await analyze();
   startTimer();
@@ -1625,7 +1668,7 @@ function renderAlertHistory() {
     let actionHtml = '';
     if (!a.takenStatus && isRecent) {
       actionHtml = '<div class="alert-btns">'
-        + '<button class="alert-btn-take" onclick="takeFromAlert(' + a.id + ')">✓ Prendre</button>'
+        + '<button class="alert-btn-take" onclick="takeFromAlert(' + a.id + ')">✓ Prendre + BingX ↗</button>'
         + '<button class="alert-btn-leave" onclick="leaveAlert(' + a.id + ')">✕ Laisser</button>'
         + '</div>';
     } else if (a.takenStatus === 'active') {
