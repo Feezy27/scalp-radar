@@ -477,15 +477,14 @@ footer{padding:.8rem 1.5rem;border-top:1px solid var(--border);font-size:12px;co
     <div class="alert-toggle-card">
       <div class="alert-toggle-header">
         <div class="alert-toggle-title">SCANNER D'ALERTES</div>
+        <button class="enable-notif-btn" id="enableNotifBtn" onclick="requestNotifPermission()" style="width:auto;padding:6px 16px;font-size:12px;">Activer les notifications</button>
       </div>
-      <div class="notif-status off" id="notifStatus">Notifications désactivées</div>
-      <button class="enable-notif-btn" id="enableNotifBtn" onclick="requestNotifPermission()">Activer les notifications navigateur</button>
 
-      <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;">
         <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:.75rem 1rem;">
           <div>
             <div style="font-size:13px;font-weight:600;">⚡ Alertes SCALP</div>
-            <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:2px;">1h / 5min / 15min</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">1h / 5min / 15min</div>
           </div>
           <div class="toggle-wrap">
             <span class="toggle-lbl" id="toggleLblScalp">Off</span>
@@ -498,7 +497,7 @@ footer{padding:.8rem 1.5rem;border-top:1px solid var(--border);font-size:12px;co
         <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:.75rem 1rem;">
           <div>
             <div style="font-size:13px;font-weight:600;">📈 Alertes SWING</div>
-            <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-top:2px;">4h / 1h / 15min</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">4h / 1h / 15min</div>
           </div>
           <div class="toggle-wrap">
             <span class="toggle-lbl" id="toggleLblSwing">Off</span>
@@ -510,9 +509,9 @@ footer{padding:.8rem 1.5rem;border-top:1px solid var(--border);font-size:12px;co
         </div>
       </div>
 
-      <div style="margin-top:10px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);line-height:1.7;">
-        Scan toutes les <strong style="color:var(--text);">3 min</strong> · Signal requis : <strong style="color:var(--green);">3/3 TF alignés + confiance ≥ 80%</strong><br>
-        <span style="color:var(--amber);">iPhone : ajoute le site à l'écran d'accueil pour recevoir les notifs.</span>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.7;">
+        Signal requis : <strong style="color:var(--green);">3/3 TF alignés + confiance ≥ 80%</strong> ·
+        <span style="color:var(--amber);">iPhone : ajoute à l'écran d'accueil</span>
       </div>
     </div>
 
@@ -521,7 +520,7 @@ footer{padding:.8rem 1.5rem;border-top:1px solid var(--border);font-size:12px;co
         <span id="scanModeTxt">SCAN ACTIF</span>
         <span id="scanProgressTxt"></span>
       </div>
-      <div style="margin-top:6px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--muted);">Prochain scan : <span id="scanCdTxt">—</span></div>
+      <div style="margin-top:8px;font-size:16px;font-weight:600;color:var(--text);">Prochain scan : <span id="scanCdTxt" style="color:var(--green);text-shadow:0 0 8px var(--green-glow);">—</span></div>
     </div>
 
     <div class="alert-pairs-card">
@@ -1411,25 +1410,23 @@ async function requestNotifPermission() {
 }
 
 function updateNotifStatus(state) {
-  const el = document.getElementById('notifStatus');
   const btn = document.getElementById('enableNotifBtn');
+  if (!btn) return;
   if (state === 'granted') {
-    el.className = 'notif-status ok';
-    el.textContent = '✓ Notifications autorisées';
     btn.disabled = true;
     btn.textContent = '✓ Notifications activées';
+    btn.style.borderColor = 'var(--green)';
+    btn.style.color = 'var(--green)';
   } else if (state === 'denied') {
-    el.className = 'notif-status warn';
-    el.textContent = '✗ Notifications bloquées — autorise-les dans les paramètres du navigateur';
     btn.disabled = true;
-  } else if (state === 'default') {
-    el.className = 'notif-status off';
-    el.textContent = 'Clique le bouton pour autoriser les notifications';
-    btn.disabled = false;
+    btn.textContent = '✗ Bloquées — autorise dans les paramètres';
+    btn.style.borderColor = 'var(--red)';
+    btn.style.color = 'var(--red)';
   } else {
-    el.className = 'notif-status warn';
-    el.textContent = 'Notifications non supportées sur ce navigateur';
-    btn.disabled = true;
+    btn.disabled = false;
+    btn.textContent = 'Activer les notifications';
+    btn.style.borderColor = 'var(--green)';
+    btn.style.color = 'var(--green)';
   }
 }
 
