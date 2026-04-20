@@ -1205,6 +1205,15 @@ function finalizeTrade(exitPrice, outcome) {
 function autoCloseTrade(outcome) { finalizeTrade(currentPrice, outcome); }
 function closeTrade() { finalizeTrade(currentPrice, 'Clôture manuelle'); }
 
+// ── BRIDGE EXTENSION CHROME ──
+function sendTradeToExtension(trade) {
+  try {
+    const event = new CustomEvent('SCALP_RADAR_TRADE', { detail: trade });
+    window.dispatchEvent(event);
+  } catch(e) {}
+  try { sessionStorage.setItem('scalp_pending_trade', JSON.stringify(trade)); } catch(e) {}
+}
+
 // ── OUVRIR BINGX SUR LA BONNE PAIRE ──
 function openBingX(pair) {
   // pair au format "BTCUSDT" ou "BTC" — on extrait le symbole
@@ -1295,8 +1304,9 @@ async function takeFromAlert(alertId) {
   renderAlertHistory();
   showPage('analyse');
 
-  // Copie les valeurs dans le presse-papier + ouvre BingX sur la bonne paire
+  // Copie les valeurs dans le presse-papier + ouvre BingX + envoie à l'extension
   copyTradeToClipboard(activeTrade);
+  sendTradeToExtension(activeTrade);
   openBingX(a.pair);
 
   // Lance immédiatement une analyse pour charger le prix réel
