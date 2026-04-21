@@ -684,7 +684,8 @@ let mode = 'scalp';
 let uiMode = 'beginner';
 let cdVal = 30, timer = null, locked = false;
 let currentSignal = null;
-let activeTrade = null;
+let activeTrades = []; // tableau des trades en cours
+let activeTrade = null; // garde pour rétrocompatibilité (pointe sur le premier trade)
 let currentPrice = 0;
 const CD_MAX = 30;
 
@@ -764,13 +765,19 @@ function initParamsPage() {
 // ── STORAGE ──
 function saveTrades(trades){ try{ localStorage.setItem('sr_trades', JSON.stringify(trades)); }catch(e){} }
 function loadTrades(){ try{ return JSON.parse(localStorage.getItem('sr_trades') || '[]'); }catch(e){ return []; } }
-function saveActive(t){ try{ localStorage.setItem('sr_active', t ? JSON.stringify(t) : ''); }catch(e){} }
-function loadActive(){ try{ const d=localStorage.getItem('sr_active'); return d ? JSON.parse(d) : null; }catch(e){ return null; } }
+function saveActiveTrades(arr){ try{ localStorage.setItem('sr_active', JSON.stringify(arr)); }catch(e){} }
+function loadActiveTrades(){ try{ const d=localStorage.getItem('sr_active'); if(!d) return []; const p=JSON.parse(d); return Array.isArray(p)?p:(p?[p]:[]); }catch(e){ return []; } }
+// Compatibilité ancienne API (utilisée dans quelques endroits)
+function saveActive(t){ saveActiveTrades(activeTrades); }
+function loadActive(){ const arr=loadActiveTrades(); return arr.length>0?arr[0]:null; }
+
+// Nombre max de trades simultanés selon le % par trade
+function maxSimultaneousTrades() { return Math.max(1, Math.floor(100 / settings.alloc)); }
 
 // ── HORLOGE ──
 setInterval(() => {
   document.getElementById('clock').textContent = new Date().toLocaleTimeString('fr-FR');
-  if (activeTrade) updateActivePnl();
+  if (activeTrades.length > 0) updateActivePnl();
 }, 1000);
 
 // ── PAGES (updated with alertes) ──
@@ -940,11 +947,14 @@ async function analyze() {
     const price=dE.closes[dE.closes.length-1];
     const prev=dE.closes[dE.closes.length-2];
     currentPrice = price;
-    // Marque le prix comme chargé pour l'auto-clôture (évite les faux triggers au démarrage)
-    if (activeTrade && !activeTrade.priceReadyAt) {
-      activeTrade.priceReadyAt = Date.now();
-      saveActive(activeTrade);
-    }
+    // Marque le prix comme chargé pour les trades actifs sur cette paire
+    const currentPair = document.getElementById('pair').value;
+    activeTrades.forEach(t => {
+      if (t.pair === currentPair && !t.priceReadyAt) {
+        t.priceReadyAt = Date.now();
+      }
+    });
+    if (activeTrades.length > 0) saveActiveTrades(activeTrades);
     const chgPct=((price-prev)/prev)*100;
     const atr=calcATR(dE.highs,dE.lows,dE.closes,14);
 
@@ -1083,6 +1093,124 @@ async function analyze() {
     document.getElementById('sigWord').textContent='ERREUR';
     document.getElementById('sigSub').textContent=err.message;
   }
+
+  // ── SURVEILLANCE DES TRADES ACTIFS ──
+  if (activeTrades.length > 0 && currentPrice > 0) {
+    monitorActiveTrades(isLong, isShort, sEntry, price);
+  }
+}
+
+// ── MONITORING : BREAKEVEN + REVERSAL ──
+// Stocke les alertes déjà envoyées pour ne pas spammer
+const sentTradeAlerts = {};
+
+function monitorActiveTrades(currentIsLong, currentIsShort, currentScore, price) {
+  activeTrades.forEach(trade => {
+    if (!trade.priceReadyAt) return; // prix pas encore chargé
+
+    const tid = trade.id;
+    if (!sentTradeAlerts[tid]) sentTradeAlerts[tid] = { breakeven: false, reversal: false };
+
+    const isLong = trade.direction === 'LONG';
+    const entry  = trade.entry;
+    const tp     = trade.tp;
+    const sl     = trade.sl;
+
+    // ── ALERTE 1 : SL À BREAKEVEN ──
+    // Conditions : prix a parcouru ≥ 40% vers le TP ET analyse confirme toujours
+    if (!sentTradeAlerts[tid].breakeven) {
+      const totalDist = Math.abs(tp - entry);
+      const progress  = isLong ? (price - entry) : (entry - price);
+      const progressPct = totalDist > 0 ? (progress / totalDist) * 100 : 0;
+
+      // Analyse confirme si le score va dans la même direction
+      const analysisConfirms = isLong ? currentScore >= 1 : currentScore <= -1;
+
+      if (progressPct >= 40 && analysisConfirms && progress > 0) {
+        sentTradeAlerts[tid].breakeven = true;
+
+        const gainActuel = (trade.position * Math.abs(progress / entry)).toFixed(2);
+
+        // Notif navigateur
+        if (Notification.permission === 'granted') {
+          const n = new Notification('🔒 ScalpRadar — Mets ton SL à l\'entrée !', {
+            body: trade.pair.replace('USDT','') + ' ' + trade.direction +
+                  '\nProgression : ' + progressPct.toFixed(0) + '% vers le TP' +
+                  '\nGain actuel : +' + gainActuel + '€' +
+                  '\n→ Déplace ton SL à ' + fmt(entry) + ' sur BingX (risque zéro)',
+            tag: 'breakeven-' + tid,
+            requireInteraction: true,
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="%23050709" rx="12"/><text y="44" x="8" font-size="40" fill="%2300ff88">S</text></svg>'
+          });
+          n.onclick = () => { window.focus(); showPage('analyse'); n.close(); };
+        }
+
+        // Indicateur visuel dans l'app
+        showBreakevenAlert(trade, progressPct, gainActuel);
+      }
+    }
+
+    // ── ALERTE 2 : CLÔTURE RECOMMANDÉE ──
+    // Conditions : analyse s'inverse clairement (score fort dans l'autre sens)
+    if (!sentTradeAlerts[tid].reversal) {
+      const reversalDetected = isLong ? currentScore <= -3 : currentScore >= 3;
+
+      if (reversalDetected) {
+        sentTradeAlerts[tid].reversal = true;
+
+        const priceDiff = isLong ? (price - entry) / entry : (entry - price) / entry;
+        const pnlActuel = (trade.position * priceDiff).toFixed(2);
+        const isPositive = priceDiff > 0;
+
+        if (Notification.permission === 'granted') {
+          const n = new Notification('⚠️ ScalpRadar — Analyse inversée !', {
+            body: trade.pair.replace('USDT','') + ' ' + trade.direction +
+                  '\nL\'analyse ' + (isLong ? 'SHORT' : 'LONG') + ' se confirme' +
+                  '\nP&L actuel : ' + (isPositive ? '+' : '') + pnlActuel + '€' +
+                  '\n→ Envisage de clôturer le trade sur BingX',
+            tag: 'reversal-' + tid,
+            requireInteraction: true,
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="%23050709" rx="12"/><text y="44" x="8" font-size="40" fill="%23ffaa00">S</text></svg>'
+          });
+          n.onclick = () => { window.focus(); showPage('analyse'); n.close(); };
+        }
+
+        showReversalAlert(trade, pnlActuel, isPositive);
+      }
+    }
+  });
+}
+
+function showBreakevenAlert(trade, progressPct, gainActuel) {
+  // Ajoute un bandeau vert dans la carte trade en cours
+  const wrap = document.getElementById('activeTradeWrap');
+  if (!wrap) return;
+  const existing = document.getElementById('sr-be-alert-' + trade.id);
+  if (existing) return;
+  const div = document.createElement('div');
+  div.id = 'sr-be-alert-' + trade.id;
+  div.style.cssText = 'margin-top:8px;padding:10px 14px;border-radius:6px;background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.4);font-size:13px;color:var(--green);line-height:1.6;';
+  div.innerHTML = '🔒 <strong>' + progressPct.toFixed(0) + '% vers le TP — Mets ton SL à l\'entrée !</strong><br>' +
+    'Déplace ton SL à <strong>' + fmt(trade.entry) + '</strong> sur BingX → ton trade devient <strong>risque zéro</strong>.<br>' +
+    'Gain actuel sécurisé : <strong>+' + gainActuel + '€</strong>';
+  const card = wrap.querySelector('.active-trade-card');
+  if (card) card.appendChild(div);
+}
+
+function showReversalAlert(trade, pnlActuel, isPositive) {
+  const wrap = document.getElementById('activeTradeWrap');
+  if (!wrap) return;
+  const existing = document.getElementById('sr-rev-alert-' + trade.id);
+  if (existing) return;
+  const div = document.createElement('div');
+  div.id = 'sr-rev-alert-' + trade.id;
+  div.style.cssText = 'margin-top:8px;padding:10px 14px;border-radius:6px;background:rgba(255,170,0,.1);border:1px solid rgba(255,170,0,.4);font-size:13px;color:var(--amber);line-height:1.6;';
+  div.innerHTML = '⚠ <strong>Analyse inversée — envisage de clôturer</strong><br>' +
+    'La tendance s\'est retournée contre ta position.<br>' +
+    'P&L actuel : <strong style="color:' + (isPositive ? 'var(--green)' : 'var(--red)') + '">' +
+    (isPositive ? '+' : '') + pnlActuel + '€</strong> — décide toi-même si tu continues ou clôtures.';
+  const card = wrap.querySelector('.active-trade-card');
+  if (card) card.appendChild(div);
 }
 
 // ── PRISE DE TRADE ──
@@ -1106,8 +1234,11 @@ function takeTrade() {
 }
 
 function renderActiveTrade() {
-  if (!activeTrade) { document.getElementById('activeTradeWrap').style.display='none'; return; }
-  document.getElementById('activeTradeWrap').style.display = 'block';
+  const wrap = document.getElementById('activeTradeWrap');
+  if (!activeTrades || activeTrades.length === 0) { wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+  // Pour rétro-compat avec les éléments existants, affiche le premier trade dans les champs fixes
+  activeTrade = activeTrades[0];
   document.getElementById('atBadge').textContent = activeTrade.direction;
   document.getElementById('atBadge').style.background = activeTrade.direction==='LONG' ? 'var(--green)' : 'var(--red)';
   document.getElementById('atBadge').style.color = activeTrade.direction==='LONG' ? '#000' : '#fff';
@@ -1116,74 +1247,117 @@ function renderActiveTrade() {
   document.getElementById('atSL').textContent = fmt(activeTrade.sl);
   document.getElementById('atLev').textContent = '×' + activeTrade.lev;
   document.getElementById('atPos').textContent = activeTrade.position.toFixed(0) + '€';
+  // Affiche un badge si plusieurs trades actifs
+  const header = document.querySelector('.at-header');
+  if (header) {
+    const existing = header.querySelector('.at-count');
+    if (activeTrades.length > 1) {
+      if (!existing) {
+        const badge = document.createElement('span');
+        badge.className = 'at-count';
+        badge.style.cssText = 'font-size:11px;background:var(--blue);color:#000;border-radius:4px;padding:2px 8px;font-weight:700;margin-left:6px;';
+        badge.textContent = activeTrades.length + ' trades actifs';
+        header.appendChild(badge);
+      } else {
+        existing.textContent = activeTrades.length + ' trades actifs';
+      }
+    } else if (existing) existing.remove();
+  }
   updateActivePnl();
 }
 
 function updateActivePnl() {
-  if (!activeTrade) return;
-  // Ne pas calculer si le prix courant n'est pas encore chargé pour cette paire
+  if (!activeTrades || activeTrades.length === 0) return;
+  // Affiche le P&L du premier trade dans la carte principale
+  const t = activeTrades[0];
   if (!currentPrice || currentPrice <= 0) {
     document.getElementById('atPnlLive').textContent = 'Chargement du prix...';
     document.getElementById('atPnlLive').style.color = 'var(--muted)';
     return;
   }
-  const elapsed = Date.now() - activeTrade.entryTime;
+  // Check TP/SL pour chaque trade actif
+  const toClose = [];
+  activeTrades.forEach(trade => {
+    if (!trade.priceReadyAt || (Date.now() - trade.priceReadyAt) < 500) return;
+    // Note: on vérifie seulement le trade de la paire actuellement affichée
+    if (trade.pair !== document.getElementById('pair').value) return;
+    const tpHit = trade.direction === 'LONG' ? currentPrice >= trade.tp : currentPrice <= trade.tp;
+    const slHit = trade.direction === 'LONG' ? currentPrice <= trade.sl : currentPrice >= trade.sl;
+    if (tpHit || slHit) toClose.push({ trade, outcome: tpHit ? 'TP touché ✓' : 'SL touché ✗' });
+  });
+  toClose.forEach(({ trade, outcome }) => finalizeSpecificTrade(trade.id, currentPrice, outcome));
+
+  const elapsed = Date.now() - t.entryTime;
   document.getElementById('atDur').textContent = fmtDur(elapsed);
-  const priceDiff = activeTrade.direction === 'LONG'
-    ? (currentPrice - activeTrade.entry) / activeTrade.entry
-    : (activeTrade.entry - currentPrice) / activeTrade.entry;
-  const pnl = activeTrade.position * priceDiff;
+  const priceDiff = t.direction === 'LONG'
+    ? (currentPrice - t.entry) / t.entry
+    : (t.entry - currentPrice) / t.entry;
+  const pnl = t.position * priceDiff;
   const pnlEl = document.getElementById('atPnlLive');
-  pnlEl.textContent = fmtEur(pnl) + ' (' + fmtPct(priceDiff*100) + ')';
-  pnlEl.style.color = pnl >= 0 ? 'var(--green)' : 'var(--red)';
-  // Auto-clôture si TP ou SL atteint — uniquement si le prix est frais (chargé depuis moins de 2 min)
-  if (!activeTrade.priceReadyAt || (Date.now() - activeTrade.priceReadyAt) < 500) return;
-  const tpHit = activeTrade.direction === 'LONG' ? currentPrice >= activeTrade.tp : currentPrice <= activeTrade.tp;
-  const slHit = activeTrade.direction === 'LONG' ? currentPrice <= activeTrade.sl : currentPrice >= activeTrade.sl;
-  if (tpHit || slHit) autoCloseTrade(tpHit ? 'TP touché ✓' : 'SL touché ✗');
+  // Si plusieurs trades, affiche la somme
+  if (activeTrades.length > 1) {
+    const totalPnl = activeTrades.reduce((sum, trade) => {
+      const diff = trade.direction === 'LONG'
+        ? (currentPrice - trade.entry) / trade.entry
+        : (trade.entry - currentPrice) / trade.entry;
+      return sum + trade.position * diff;
+    }, 0);
+    pnlEl.textContent = 'Total : ' + fmtEur(totalPnl) + ' (' + activeTrades.length + ' trades)';
+    pnlEl.style.color = totalPnl >= 0 ? 'var(--green)' : 'var(--red)';
+  } else {
+    pnlEl.textContent = fmtEur(pnl) + ' (' + fmtPct(priceDiff*100) + ')';
+    pnlEl.style.color = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+  }
 }
 
 // ── CLÔTURER TRADE ──
-function finalizeTrade(exitPrice, outcome) {
-  if (!activeTrade) return;
-  const priceDiff = activeTrade.direction === 'LONG'
-    ? (exitPrice - activeTrade.entry) / activeTrade.entry
-    : (activeTrade.entry - exitPrice) / activeTrade.entry;
-  const pnl = activeTrade.position * priceDiff;
+function finalizeSpecificTrade(tradeId, exitPrice, outcome) {
+  const idx = activeTrades.findIndex(t => t.id === tradeId);
+  if (idx === -1) return;
+  const trade = activeTrades[idx];
+
+  const priceDiff = trade.direction === 'LONG'
+    ? (exitPrice - trade.entry) / trade.entry
+    : (trade.entry - exitPrice) / trade.entry;
+  const pnl = trade.position * priceDiff;
   const isWin = pnl > 0;
-  const duration = Date.now() - activeTrade.entryTime;
+  const duration = Date.now() - trade.entryTime;
 
   // Archive dans le journal
-  const trade = { ...activeTrade, exitPrice, pnl, isWin, duration, outcome, exitTime: Date.now(), priceDiffPct: priceDiff * 100 };
+  const archived = { ...trade, exitPrice, pnl, isWin, duration, outcome, exitTime: Date.now(), priceDiffPct: priceDiff * 100 };
   const trades = loadTrades();
-  trades.unshift(trade);
+  trades.unshift(archived);
   saveTrades(trades);
 
-  // Mise à jour BK automatique
+  // Mise à jour BK
   settings.capital = Math.max(0, parseFloat((settings.capital + pnl).toFixed(2)));
   try { localStorage.setItem('sr_settings', JSON.stringify(settings)); } catch(e) {}
   updateDisplaySettings();
 
-  // Marque l'alerte source comme clôturée
-  if (activeTrade.alertId !== undefined) {
-    const idx = alertHistory.findIndex(a => a.id === activeTrade.alertId);
-    if (idx !== -1) {
-      alertHistory[idx].takenStatus = isWin ? 'won' : 'lost';
-      alertHistory[idx].pnl = pnl;
-      saveAlertHistory();
-    }
+  // Marque l'alerte source
+  if (trade.alertId !== undefined) {
+    const ai = alertHistory.findIndex(a => a.id === trade.alertId);
+    if (ai !== -1) { alertHistory[ai].takenStatus = isWin ? 'won' : 'lost'; alertHistory[ai].pnl = pnl; saveAlertHistory(); }
   }
 
-  activeTrade = null;
-  saveActive(null);
-  locked = false;
-  currentSignal = null;
+  // Retire le trade du tableau
+  activeTrades.splice(idx, 1);
+  activeTrade = activeTrades.length > 0 ? activeTrades[0] : null;
+  saveActiveTrades(activeTrades);
 
-  document.getElementById('activeTradeWrap').style.display = 'none';
-  document.getElementById('levelsWrap').style.display = 'none';
-  document.getElementById('begLevelsWrap').style.display = 'none';
-  document.getElementById('durationCard').style.display = 'none';
+  // Si plus aucun trade actif
+  if (activeTrades.length === 0) {
+    locked = false;
+    currentSignal = null;
+    document.getElementById('activeTradeWrap').style.display = 'none';
+    document.getElementById('levelsWrap').style.display = 'none';
+    document.getElementById('begLevelsWrap').style.display = 'none';
+    document.getElementById('durationCard').style.display = 'none';
+  } else {
+    renderActiveTrade();
+  }
 
+  // Feedback visuel
   const sigCard = document.getElementById('sigCard');
   sigCard.className = 'signal-card ' + (isWin ? 'long' : 'short');
   document.getElementById('sigArrow').textContent = isWin ? '✓' : '✗';
@@ -1193,15 +1367,23 @@ function finalizeTrade(exitPrice, outcome) {
 
   // Notif de résultat
   if (Notification.permission === 'granted') {
-    new Notification('ScalpRadar — Trade ' + (isWin ? 'GAGNÉ ✓' : 'PERDU ✗'), {
-      body: (isWin ? '+' : '') + pnl.toFixed(2) + '€ · ' + outcome + '\nNouvelle BK : ' + settings.capital.toFixed(2) + '€',
-      tag: 'trade-result'
+    new Notification('ScalpRadar — ' + trade.pair.replace('USDT','') + ' ' + (isWin ? 'GAGNÉ ✓' : 'PERDU ✗'), {
+      body: (isWin ? '+' : '') + pnl.toFixed(2) + '€ · ' + outcome + '\nBK : ' + settings.capital.toFixed(2) + '€',
+      tag: 'trade-result-' + tradeId
     });
   }
 
-  setTimeout(() => { locked = false; manualAnalyze(); }, 3000);
+  setTimeout(() => {
+    if (activeTrades.length === 0) { locked = false; manualAnalyze(); }
+  }, 3000);
 }
 
+function finalizeTrade(exitPrice, outcome) {
+  // Clôture le trade de la paire actuellement affichée
+  const pair = document.getElementById('pair').value;
+  const t = activeTrades.find(t => t.pair === pair) || activeTrades[0];
+  if (t) finalizeSpecificTrade(t.id, exitPrice, outcome);
+}
 function autoCloseTrade(outcome) { finalizeTrade(currentPrice, outcome); }
 function closeTrade() { finalizeTrade(currentPrice, 'Clôture manuelle'); }
 
@@ -1251,14 +1433,19 @@ function takeAndOpenBingX() {
 
 // ── PRENDRE UN TRADE DEPUIS UNE ALERTE ──
 async function takeFromAlert(alertId) {
-  if (activeTrade) { alert('Tu as déjà un trade en cours. Clôture-le avant d\'en ouvrir un nouveau.'); return; }
   const a = alertHistory.find(x => x.id === alertId);
   if (!a) return;
 
-  // Vérifie que les paramètres sont bien chargés
   if (!settings.capital || settings.capital <= 0) {
     alert('Configure ta bankroll dans l\'onglet Paramètres avant de prendre un trade.');
-    showPage('params');
+    showPage('params'); return;
+  }
+
+  const maxTrades = maxSimultaneousTrades();
+
+  // Vérifie si on a déjà atteint le max de trades simultanés
+  if (activeTrades.length >= maxTrades) {
+    alert('Tu as déjà ' + activeTrades.length + ' trade(s) en cours sur ' + maxTrades + ' maximum autorisé(s) avec ' + settings.alloc + '% par trade.\n\nClôture un trade avant d\'en ouvrir un nouveau, ou réduis le % par trade dans les Paramètres.');
     return;
   }
 
@@ -1271,7 +1458,7 @@ async function takeFromAlert(alertId) {
   const targetLoss = tradeCapital * settings.risk / 100;
   const lev = slDist > 0 ? Math.max(1, Math.min(20, Math.round(targetLoss / (tradeCapital * slDist / 100)))) : 1;
 
-  activeTrade = {
+  const newTrade = {
     direction: a.dir,
     pair: a.pair + 'USDT',
     mode: a.modeKey,
@@ -1286,30 +1473,29 @@ async function takeFromAlert(alertId) {
     entryTime: Date.now(),
     id: Date.now(),
     alertId: alertId,
-    priceReadyAt: null // sera défini au premier fetch de prix
+    priceReadyAt: null
   };
 
-  // Sélectionne la bonne paire pour que analyze() charge le bon prix
+  activeTrades.push(newTrade);
+  activeTrade = activeTrades[0];
+  saveActiveTrades(activeTrades);
+
   const pairSelect = document.getElementById('pair');
   if (pairSelect) pairSelect.value = a.pair + 'USDT';
   if (a.modeKey !== mode) setMode(a.modeKey);
 
-  // Marque l'alerte comme prise
   const idx = alertHistory.findIndex(x => x.id === alertId);
   if (idx !== -1) { alertHistory[idx].takenStatus = 'active'; saveAlertHistory(); }
 
-  saveActive(activeTrade);
-  locked = true;
+  locked = activeTrades.length >= maxTrades; // verrouille seulement si on est au max
   renderActiveTrade();
   renderAlertHistory();
   showPage('analyse');
 
-  // Copie les valeurs dans le presse-papier + ouvre BingX + envoie à l'extension
-  copyTradeToClipboard(activeTrade);
-  sendTradeToExtension(activeTrade);
+  copyTradeToClipboard(newTrade);
+  sendTradeToExtension(newTrade);
   openBingX(a.pair);
 
-  // Lance immédiatement une analyse pour charger le prix réel
   await analyze();
   startTimer();
 }
@@ -1331,7 +1517,7 @@ function unlock() {
 
 // ── TIMER ──
 function manualAnalyze() {
-  if (activeTrade) { analyze(); return; }
+  if (activeTrades.length > 0) { analyze(); return; }
   locked = false;
   currentSignal = null;
   document.getElementById('lockBadge').style.display = 'none';
@@ -1674,9 +1860,23 @@ function renderAlertHistory() {
     const ageMs = Date.now() - a.time;
     const isRecent = ageMs < 15 * 60 * 1000; // moins de 15 min
 
+    // Détection doublon : même paire + même direction dans les 15 dernières minutes
+    const DEDUP_WINDOW = 15 * 60 * 1000;
+    const isDuplicate = alertHistory.some(other =>
+      other.id !== a.id &&
+      other.pair === a.pair &&
+      other.dir === a.dir &&
+      other.modeKey === a.modeKey &&
+      Math.abs(other.time - a.time) < DEDUP_WINDOW &&
+      other.time < a.time // other est plus ancien
+    );
+
     // Boutons ou badge selon statut
     let actionHtml = '';
-    if (!a.takenStatus && isRecent) {
+    if (isDuplicate) {
+      // Alerte en doublon — signal de confirmation seulement
+      actionHtml = '<div class="alert-taken-badge active-trade" style="background:rgba(0,170,255,.1);color:var(--blue);border-color:rgba(0,170,255,.3);">✓ Signal toujours confirmé — trade déjà en place</div>';
+    } else if (!a.takenStatus && isRecent) {
       actionHtml = '<div class="alert-btns">'
         + '<button class="alert-btn-take" onclick="takeFromAlert(' + a.id + ')">✓ Prendre + BingX ↗</button>'
         + '<button class="alert-btn-leave" onclick="leaveAlert(' + a.id + ')">✕ Laisser</button>'
@@ -1728,11 +1928,12 @@ document.getElementById('source').onchange = manualAnalyze;
 loadSettings();
 updateDisplaySettings();
 
-// Restaure trade actif si page rechargée
-activeTrade = loadActive();
-if (activeTrade) {
-  activeTrade.priceReadyAt = null; // reset pour éviter auto-close immédiat au rechargement
-  locked = true;
+// Restaure trades actifs si page rechargée
+activeTrades = loadActiveTrades();
+activeTrades.forEach(t => { t.priceReadyAt = null; }); // reset pour éviter auto-close immédiat
+activeTrade = activeTrades.length > 0 ? activeTrades[0] : null;
+if (activeTrades.length > 0) {
+  locked = activeTrades.length >= maxSimultaneousTrades();
   renderActiveTrade();
 }
 
